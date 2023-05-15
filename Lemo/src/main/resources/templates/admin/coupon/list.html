@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/admin-layout}">
+<th:block layout:fragment="css-js">
+    <link rel="stylesheet" th:href="@{/css/admin/adminSubStyle.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/adminCommon.css}">
+    <script th:src="@{/js/admin/selectOption.js}"></script>
+</th:block>
+<th:block layout:fragment="content">
+    <!-- 메인 -->
+    <main>
+        <div class="main_inner">
+            <!-- 죄측 사이드바 -->
+            <th:block th:replace="~{fragments/_aside::adminFragment}"></th:block>
+            <!-- 우측 메인 컨테이너 -->
+            <section class="main_content">
+                <div class="main_cotent_inner">
+                    <div class="main_content_div">
+                        <div class="col_nav">
+                            <span>쿠폰관리 ></span>
+                            <span>쿠폰목록</span>
+                        </div>
+
+                        <form class="col_register_form" th:action="@{/admin/coupon/list}">
+                            <!-- 쿠폰 관리 -->
+                            <div class="col_register1">
+                                <div class="stayName">
+                                    <div>
+                                        <span>쿠폰 관리</span>
+                                    </div>
+                                </div>
+                                <!-- 쿠폰 검색 (관리자)-->
+                                <div class="coupon_top">
+                                    <h3>발급쿠폰검색</h3>
+                                    <table class="search_coupon">
+                                        <colgroup>
+                                            <col width="10%">
+                                            <col width="40%">
+                                            <col width="10%">
+                                            <col width="40%">
+                                        </colgroup>
+                                        <tr>
+                                            <th>
+                                                <select class="search_option" name="searchField">
+                                                    <option value="acc_id" th:selected="${ph.sc.searchField == 'acc_id'}">숙소아이디</option>
+                                                    <option value="cp_subject" th:selected="${ph.sc.searchField == 'cp_subject'}">쿠폰명</option>
+                                                    <option value="user_id" th:selected="${ph.sc.searchField == 'user_id'}">판매자</option>
+                                                </select>
+                                            </th>
+                                            <td>
+                                                <input type="text" name="searchWord" placeholder="검색어를 입력하세요" th:value="${param.searchWord}"/>
+                                            </td>
+                                            <th>발급구분</th>
+                                            <td>
+                                                <select id="c_role_type" name="searchCouponRole">
+                                                    <option value="ADMIN" th:selected="${ph.sc.searchCouponRole == 'ADMIN'}">관리자 발급</option>
+                                                    <option value="BUSINESS" th:selected="${ph.sc.searchCouponRole == 'BUSINESS'}">판매자 발급</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <div class="search_btn">
+                                        <button type="button" class="resetOption" onclick="location.href = window.location.origin + window.location.pathname;">초기화</button>
+                                        <button type="submit" class="btnSearch">검색</button>
+                                    </div>
+                                </div>
+                                <span class="totalCount" style="margin-bottom: 5px;">쿠폰 총 개수 ([[${totalCoupon}]])</span>
+
+                                <!-- 쿠폰 목록 -->
+                                <div class="coupon_list">
+                                    <div class="c_list_top">
+                                        <div class="c_w70">
+                                        </div>
+                                        <div class="c_w30">
+                                            <a th:href="@{/admin/coupon/coupon}" class="btn_insert">쿠폰등록</a>
+                                        </div>
+                                    </div>
+                                    <table class="c_list">
+                                        <tr>
+                                            <th>쿠폰아이디</th>
+                                            <th>쿠폰명</th>
+                                            <th>할인율(%)</th>
+                                            <th>할인가(원)</th>
+                                            <th>배포시작일</th>
+                                            <th>배포종료일</th>
+                                            <th>발급수</th>
+                                            <th>관리</th>
+                                        </tr>
+                                        <tr th:each="coupon:${coupons}">
+                                            <td th:text="${coupon.cp_id}">1</td>
+                                            <td th:text="${coupon.cp_subject}"><a class="c_name" href="#">10만원이상 구매시 1만원 할인</a></td>
+                                            <td th:text="${coupon.cp_rate}">0</td>
+                                            <td th:text="${coupon.cp_price}">10,000</td>
+                                            <td th:text="${coupon.cp_start}">23.02.27</td>
+                                            <td th:text="${coupon.cp_end}">23.03.27</td>
+                                            <td th:text="${coupon.cp_IssuedCnt}">80</td>
+                                            <td><button type="button" name="check" class="removeCoupon" th:data-no="${coupon.cp_id}">삭제</button></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="pagination_center">
+                                    <div class="pagination" th:object="${ph}" th:style="${#lists.size(coupons) == 0 ? 'visibility:hidden;':''}">
+                                        <th:block th:if="*{showPrev}">
+                                            <a th:href="@{/admin/coupon/list} + ${ph.sc.getQueryString(ph.beginPage-1)}" class="prev">< </a>
+                                        </th:block>
+                                        <th:block th:each="num:${#numbers.sequence(ph.beginPage, ph.endPage)}">
+                                            <a th:href="@{/admin/coupon/list} + ${ph.sc.getQueryString(num)}" th:class="${num == ph.sc.page ? 'num current':'num'}">
+                                                [[${num}]]
+                                            </a>
+                                        </th:block>
+                                        <th:block th:if="*{showNext}">
+                                            <a th:href="@{/admin/coupon/list} + ${ph.sc.getQueryString(ph.endPage+1)}" class="next"> ></a>
+                                        </th:block>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </form>
+                    </div>
+                    <div class="blank30"></div>
+                </div>
+            </section>
+        </div>
+    </main>
+    <th:block th:replace="~{fragments/_footer::footerFragment}"></th:block>
+</th:block>
+<th:block layout:fragment="script">
+    <script>
+    $(document).ready(function() {
+        // 쿠폰 삭제
+        $('.removeCoupon').click(function(e){
+            e.preventDefault();
+
+
+            Swal.fire({
+               title: '정말 삭제하시겠습니까?',
+               icon: 'warning',
+
+               showCancelButton: true, // cancel버튼 보이기. 기본은 원래 없음
+               confirmButtonColor: '#3085d6', // confrim 버튼 색깔 지정
+               cancelButtonColor: '#d33', // cancel 버튼 색깔 지정
+               confirmButtonText: '승인', // confirm 버튼 텍스트 지정
+               cancelButtonText: '취소', // cancel 버튼 텍스트 지정
+
+               reverseButtons: false, // 버튼 순서 거꾸로
+
+            }).then(result => {
+               // 만약 Promise리턴을 받으면,
+               if (result.isConfirmed) { // 만약 모달창에서 confirm 버튼을 눌렀다면
+
+                  let cp_id = $(this).attr('data-no');
+
+                    //console.log('cp_id ajax: ' + cp_id);
+
+                    const jsonData = {"cp_id": cp_id};
+
+                    ajaxAPI("admin/coupon/delete", jsonData, "DELETE").then((response) => {
+                        if(response.result > 0) {
+                            sweetalert("쿠폰이 삭제되었습니다.", "success");
+                            setTimeout(function() {
+                                location.replace("/Lemo/admin/coupon/list");
+                            }, 2000);
+                        } else {
+                            alert('error');
+                        }
+                    }).catch((errorMsg) => {
+                        console.log(errorMsg);
+                    });
+               }
+            });
+
+
+
+
+        });
+    });
+
+
+
+
+    </script>
+</th:block>
+</html>

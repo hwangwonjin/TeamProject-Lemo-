@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/admin-layout}">
+<th:block layout:fragment="css-js">
+    <link rel="stylesheet" th:href="@{/css/admin/businessStyle.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/adminCommon.css}">
+</th:block>
+<th:block layout:fragment="content">
+    <main>
+        <div class="main_inner">
+            <!-- 죄측 사이드바 -->
+            <th:block th:replace="~{fragments/_aside::businessFragment}"></th:block>
+            <!-- 우측 메인 컨테이너 -->
+            <section class="main_content">
+                <div class="main_cotent_inner">
+                    <div class="main_content_div">
+                        <div class="col1">
+                            <!-- 오늘 날짜 출력 -->
+                            <div class="today_sales_status">
+                                <p>[[${#dates.format(#dates.createNow(), 'yyyy년 MM월 dd일')}]]</p>
+                            </div>
+                            <p class="tsd_msg">금일,
+                                <strong>([[${#dates.format(#dates.createNow(), 'yyyy년 MM월 dd일')}]])</strong> 데이터가 조회됩니다.</p>
+                            <div class="sales_day_status">
+                                <th:block th:if="${#lists.size(todaySales) == 0}">
+                                    <div class="tot_sales_day">
+                                    <div class="tsd_tit1">총매출</div>
+                                    <div class="tsd_tit2">0 <i>건</i></div>
+                                    <div class="tsd_tit3">0</div>
+                                    <div class="tsd_tit4"><i>원</i></div>
+                                </div>
+                                </th:block>
+                                <th:block th:if="${#lists.size(todaySales) != 0}">
+                                <div class="tot_sales_day">
+                                    <div class="tsd_tit1">총매출</div>
+                                    <div class="tsd_tit2">[[${todaySales[0].count_sales}]] <i>건</i></div>
+                                    <div class="tsd_tit3" th:text="${#numbers.formatInteger(todaySales[0].tot_res_price, 0, 'COMMA')}"></div>
+                                    <div class="tsd_tit4"><i>원</i></div>
+                                </div>
+                                </th:block>
+                                <div class="tsd_grid">
+                                    <div class="tsd_grid1">
+                                        <div class="tsd_res">
+                                            <p>예약</p>
+                                            <h3 th:if="${daySales == null}">0 <i>건</i></h3>
+                                            <h3 th:unless="${daySales == null}">[[${daySales}]] <i>건</i></h3>
+                                        </div>
+                                        <div class="tsd_cancel">
+                                            <p>취소</p>
+                                            <h3 th:if="${dayCanceled == null}">0 <i>건</i></h3>
+                                            <h3 th:unless="${dayCanceled == null}">[[${dayCanceled}]]<i>건</i></h3>
+                                        </div>
+                                        <div class="tsd_visit">
+                                            <p>방문자</p>
+                                            <h3 th:if="${visitorTotal == null}">0 <i>명</i></h3>
+                                            <h3 th:unless="${visitorTotal == null}">[[${visitorTotal}]] <i>명</i></h3>
+                                        </div>
+                                    </div>
+                                    <div class="tsd_grid2">
+                                        <div class="tsd_qna">
+                                            <p>미배정 객실</p>
+                                            <h3 th:if="${totalRoom == 0}">0 <i>실</i></h3>
+                                            <h3 th:unless="${totalRoom == 0}">[[${totalRoom-checkRoom}]] / [[${totalRoom}]] <i>실</i></h3>
+                                        </div>
+                                        <div class="tsd_prod">
+                                            <p>문의수</p>
+                                            <h3>[[${dayQna}]] <i>건</i></h3>
+                                        </div>
+                                        <div class="tsd_regi">
+                                            <p>리뷰수</p>
+                                            <h3>[[${dayReview}]] <i>건</i></h3>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="blank10"></div>
+                    <div class="tsd_msg2">당일 기준, <strong>([[${#dates.format(#dates.createNow(), 'yyyy년 MM월 dd일')}]])</strong> 로부터 <strong> 6일 전</strong> 데이터가 조회됩니다.</div>
+
+                    <div class="main_content_div" id="main_content_div">
+                        <div class="col1" style="width: 100%">
+                            <div class="col1_graph_chart">
+                                <!-- 결제 현황 -->
+                                <div class="payment_stat_graph">
+                                    <div id="donutchart" style="width: 100%; height: 500px;"></div>
+                                </div>
+                                <!-- 객실 점유율 -->
+                                <div class="graph_inner" style="width:100% ;">
+                                    <table>
+                                        <tr>
+                                            <th>객실</th>
+                                            <th>예약</th>
+                                            <th>매출액</th>
+                                            <th>비율</th>
+                                            <th>그래프</th>
+                                        </tr>
+                                        <th:block th:if="${#lists.size(roomPercent) != 0}">
+                                            <tr th:each="room:${roomPercent}">
+                                                <td th:text="${room.room_name}"></td>
+                                                <td th:text="${room.count_sales}">4</td>
+                                                <td th:text="${#numbers.formatInteger(room.tot_res_price, 0, 'COMMA')}">123,000</td>
+                                                <td th:text="${room.count_sales/totalRoom*100}">76%</td>
+                                                <td>
+                                                    <progress id="progress1" th:value="${room.count_sales/totalRoom*100}" min="0" max="100"></progress>
+
+                                                </td>
+                                            </tr>
+                                        </th:block>
+                                        <th:block th:if="${#lists.size(roomPercent) == 0}">
+                                            <tr>
+                                                <td class="null_list">등록된 객실이 없습니다.</td>
+                                            </tr>
+                                        </th:block>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="blank30"></div>
+
+                    <div class="tsd_best">
+                        <div class="tsd_best_inner">
+                            <h3>최신 <i>리뷰</i></h3>
+                        </div>
+                        <div class="tsd_guide">최신 기준 정렬입니다. </div>
+                        <div class="col2">
+                            <div class="bestReviewList">
+                                <ul>
+                                    <li class="ba_li1">#</li>
+                                    <li class="ba_li2">예약번호</li>
+                                    <li class="ba_li3">제목</li>
+                                    <li class="ba_li4">내용</li>
+                                    <li class="ba_li5">평점</li>
+                                    <li class="ba_li6">등록일</li>
+                                </ul>
+                                <th:block th:if="${#lists.size(reviews) != 0}">
+                                    <ul th:each="review, i:${reviews}">
+                                        <li class="ba_li1" th:text="${i.index + 1}">#</li>
+                                        <li class="ba_li2" th:text="${review.res_no}">예약번호</li>
+                                        <li class="ba_li3" th:text="${review.revi_title}">제목</li>
+                                        <li class="ba_li4" th:text="${review.revi_content}">내용</li>
+                                        <li class="ba_li5" th:text="${review.revi_rate}">평점</li>
+                                        <li class="ba_li6" th:text="${review.revi_rdate}">등록일</li>
+                                    </ul>
+                                </th:block>
+                                <th:block th:if="${#lists.size(reviews) == 0}">
+                                    <div class="null_list">최근 등록된 리뷰가 없습니다.</div>
+                                </th:block>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+    <th:block th:replace="~{fragments/_footer::footerFragment}"></th:block>
+</th:block>
+<th:block layout:fragment="script">
+    <!-- 구글 차트 -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script th:inline="javascript">
+
+         // 참조 데이터 준비
+        let paysMap = [[${paysMap}]];
+
+        google.charts.load("current", {packages:["corechart"]});
+        google.charts.setOnLoadCallback(drawChart);
+        function drawChart() {
+
+             if(Object.keys(paysMap).length == 0){
+                console.log(Object.keys(paysMap).length);
+
+                var data = google.visualization.arrayToDataTable([
+                    ['payment', 'Percent'],
+                    ['결제 내역이 없습니다.', 100],
+                ]);
+
+                var options = {
+                    title: '결제 내역이 없습니다.',
+                    titleTextStyle: {fontSize:18, bold: true},
+                    fontSize: 15,
+                    pieHole: 0.3,
+                    legend: {
+                        position: 'bottom',
+                        maxLines: 7
+                    },
+                    colors: ['#4F650D', '#637A15', '#7F9822', '#9CB631', '#BBD444','#D3E570','#E4F28F'],
+                };
+
+            }else {
+                var data = google.visualization.arrayToDataTable([
+                ['payment', 'Percent'],
+                ['신용/체크카드', paysMap[1] ? paysMap[1].length : 0],
+                ['토스페이', paysMap[2] ? paysMap[2].length : 0],
+                ['PAYCO', paysMap[3] ? paysMap[3].length : 0],
+                ['카카오페이', paysMap[4] ? paysMap[4].length : 0]
+                ]);
+
+                var options = {
+                    title: '결제현황',
+                    titleTextStyle: {fontSize:18, bold: true},
+                    fontSize: 15,
+                    pieHole: 0.3,
+                    legend: {
+                    position: 'bottom',
+                    maxLines: 7
+                    },
+                    colors: ['#4F650D', '#637A15', '#7F9822', '#9CB631', '#BBD444','#D3E570','#E4F28F'],
+                };
+            }
+
+
+
+            var chart = new google.visualization.PieChart(document.getElementById('donutchart'));
+            chart.draw(data, options);
+        }
+    </script>
+</th:block>
+</html>

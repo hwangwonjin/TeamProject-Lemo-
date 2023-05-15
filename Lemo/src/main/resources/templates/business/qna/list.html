@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/admin-layout}">
+<th:block layout:fragment="css-js">
+    <link rel="stylesheet" th:href="@{/css/admin/adminQna.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/adminCommon.css}">
+    <style>
+        
+    </style>
+</th:block>
+<th:block layout:fragment="content">
+    <main>
+        <div class="main_inner">
+            <!-- 죄측 사이드바 -->
+            <th:block th:replace="~{fragments/_aside::businessFragment}"></th:block>
+            <!-- 우측 메인 컨테이너 -->
+            <section class="main_content">
+                <div class="main_cotent_inner">
+                    <div class="main_content_div">
+                        <div class="col_nav">
+                            <span>상품문의 ></span>
+                            <span>문의목록</span>
+                        </div>
+                        <div class="col2">
+                            <form th:action="@{#}">
+                                <span class="search_review_tit">상품문의검색</span>
+                                <table class="search_review_table">
+                                    <tr>
+                                        <th>상품 선택</th>
+                                        <td>
+                                            <select id="c_role_type" class="selectAccOwned" name="acc_id">
+                                                <option value="">- 전체 -</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <div class="search_btn">
+                                    <button type="submit" class="btnAdminProd3">검색</button>
+                                </div>
+                                <div class="board_list3">
+                                    <ul>
+                                        <li>
+                                            <input type="checkbox" name="all">
+                                        </li>
+                                        <li>#</li>
+                                        <li>상품번호</li>
+                                        <li>제목</li>
+                                        <li>문의자</li>
+                                        <li>작성일</li>
+                                        <li>상태</li>
+                                    </ul>
+                                    <ul class="show_list" th:if="${qnaArticles.size() == 0}">
+                                        <li id="nonData" colspan="6">
+                                            등록된 문의글이 없습니다.
+                                        </li>
+                                    </ul>
+                                    <th:block th:each="qnaArticle,i:${qnaArticles}">
+                                        <ul>
+                                            <li>
+                                                <input type="checkbox" name="qna_no" th:value="${qnaArticle.qna_no}">
+                                            </li>
+                                            <li>[[*{totalCnt-sc.offset} - ${i.index}]]</li>
+                                            <li>[[${qnaArticle.acc_id}]]</li>
+                                            <li class="title">
+                                                <a th:href="@{/business/qna/view (qna_no=${qnaArticle.qna_no}, page=${ph.sc.page})}">[[${qnaArticle.qna_title}]]</a>
+                                            </li>
+                                            <li>[[${qnaArticle.nick}]]</li>
+                                            <li>[[${qnaArticle.qna_rdate.substring(2, 10)}]]</li>
+                                            <li th:if="${qnaArticle.qna_reply == null}" class="re_off">검토중</li>
+                                            <li th:if="${qnaArticle.qna_reply != null}" class="re_complete">답변완료</li>
+                                        </ul>
+                                    </th:block>
+                                </div>
+                                <div class="pagination" th:object="${ph}" th:style="${#lists.size(qnaArticles) == 0 ? 'visibility:hidden;':''}">
+
+                                    <th:block th:if="*{showPrev}">
+                                        <a th:href="@{/business/qna/list} + ${ph.sc.getQueryString(ph.beginPage-1)}" class="prev">< </a>
+                                    </th:block>
+
+                                    <th:block th:each="num:${#numbers.sequence(ph.beginPage, ph.endPage)}">
+                                        <a th:href="@{/business/qna/list} + ${ph.sc.getQueryString(num)}" th:class="${num == ph.sc.page ? 'num current':'num'}">
+                                            [[${num}]]
+                                        </a>
+                                    </th:block>
+
+                                    <th:block th:if="*{showNext}">
+                                        <a th:href="@{/business/qna/list} + ${ph.sc.getQueryString(ph.endPage+1)}" class="next"> ></a>
+                                    </th:block>
+
+                                </div>
+                                <div class="btnAdminProd4">
+                                    <a class="btnQnaDelete">
+                                        선택삭제
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="blank30"></div>
+                </div>
+            </section>
+        </div>
+    </main>
+    <th:block th:replace="~{fragments/_footer::footerFragment}"></th:block>
+</th:block>
+<th:block layout:fragment="script">
+    <script th:src="@{/js/admin/qnaListDelete.js}"></script>
+    <script th:inline="javascript">
+    window.onload = function() {
+        let selectAccOwned = document.getElementById("c_role_type");
+        let urlParams = new URLSearchParams(window.location.search);
+        let selectedOptionValue = urlParams.get('acc_id');
+
+        ajaxAPI("business/find-all-product-qna", null, "GET")
+            .then((response) => {
+                console.log('response1: %o', response);
+
+                for (let i = 0; i < response.length; i++) {
+                    let option = document.createElement("option");
+                    option.value = response[i].acc_id;
+                    option.text = response[i].acc_name;
+
+                    // 옵션값 고정
+                    if (selectedOptionValue == response[i].acc_id) {
+                        option.setAttribute('selected', 'selected');
+                    }
+
+                    selectAccOwned.add(option);
+                }
+
+                // 옵션 변경 시에도 옵션 고정
+                selectAccOwned.addEventListener('change', function() {
+                    selectedOptionValue = this.value; // 변경된 옵션 값 업데이트
+                });
+            })
+            .catch((errorMsg) => {
+                console.log(errorMsg);
+            });
+    };
+
+    // 리스트 전체 선택
+    $(function(){
+            var checkList = [];
+
+            $('input[name=all]').click(function(){
+                //리스트 초기화
+                checkList = [];
+
+                // 전체 선택 시 전부 체크
+                $('input[name=cs_no]').prop('checked', true);
+
+                // checkList에 담는 이유는 선택삭제시 필요
+                $('input[name=cs_no]:checked').each(function(){checkList.push($(this).val()); });
+
+                console.log("checklist : " + checkList);
+            });
+         });
+    </script>
+</th:block>
+</html>

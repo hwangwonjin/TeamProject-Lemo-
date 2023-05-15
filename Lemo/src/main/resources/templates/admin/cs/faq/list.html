@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/admin-layout}">
+<th:block layout:fragment="css-js">
+    <link rel="stylesheet" th:href="@{/css/admin/adminFaq.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/adminCommon.css}">
+    <style>
+    </style>
+</th:block>
+
+<th:block layout:fragment="content">
+    <main>
+        <div class="main_inner">
+                <!-- 죄측 사이드바 -->
+            <th:block th:replace="~{fragments/_aside::adminFragment}"></th:block>
+                <!-- 우측 메인 컨테이너 -->
+                <section class="main_content">
+                    <div class="main_cotent_inner">
+                        <div class="main_content_div">
+                            <!-- 판매자인 경우 출력-->
+                            <div class="col0" style="margin-bottom: 20px;">
+                                <form action="#">
+                                    <div class="selectProdForAdmin">
+                                        <select name="cs_type" onchange="if(this.value) location.href=(this.value);">
+                                            <option th:value="@{/admin/cs/faq/list}">유형선택</option>
+                                            <option th:value="@{/admin/cs/faq/list (cs_type= 'event')}" th:selected="${ph.sc.cs_type == 'event'}">이벤트</option>
+                                            <option th:value="@{/admin/cs/faq/list (cs_type= 'payment')}" th:selected="${ph.sc.cs_type == 'payment'}">예약/결제</option>
+                                            <option th:value="@{/admin/cs/faq/list (cs_type= 'cancel')}" th:selected="${ph.sc.cs_type == 'cancel'}">취소/환불</option>
+                                            <option th:value="@{/admin/cs/faq/list (cs_type= 'use')}" th:selected="${ph.sc.cs_type == 'use'}">이용문의</option>
+                                            <option th:value="@{/admin/cs/faq/list (cs_type= 'info')}" th:selected="${ph.sc.cs_type == 'info'}">회원정보</option>
+                                            <option th:value="@{/admin/cs/faq/list (cs_type= 'review')}" th:selected="${ph.sc.cs_type == 'review'}">리뷰</option>
+                                            <option th:value="@{/admin/cs/faq/list (cs_type= 'point')}" th:selected="${ph.sc.cs_type == 'point'}">쿠폰/포인트</option>
+                                        </select>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="col_nav">
+                                <span>고객센터 ></span>
+                                <span>자주묻는질문</span>
+                            </div>
+                            <div class="col2">
+                                <form action="#">
+                                    <div class="faq_list">
+                                        <table class="tb_board tb_qna">
+                                            <thead>
+                                            <tr>
+                                                <th class="hnum">#</th>
+                                                <th>제목</th>
+                                                <th>관리</th>
+                                            </tr>
+                                            </thead>
+                                            <tr th:if="${csArticles.size() == 0}">
+                                                <td colspan="6">
+                                                    등록된 자주묻는질문이 없습니다.
+                                                </td>
+                                            </tr>
+                                            <tbody  th:each="faq,i:${csArticles}">
+                                            <tr>
+                                                <td class="qt_num">[[*{totalCnt-sc.offset} - ${i.index}]]</td>
+                                                <td class="qt_tit">
+                                                    <a class="qt_title" >[[${faq.cs_title}]]
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    <a class="btnFaqDelete" th:data-no="${faq.cs_no}">삭제</a>
+                                                    <a th:href="@{/admin/cs/faq/modify (cs_no=${faq.cs_no}, page=${ph.sc.page})}" class="btnFaqModify">수정</a>
+                                                </td>
+                                            </tr>
+                                            <tr class="answerwrap">
+                                                <td colspan="6">
+                                                    <div class="qt">
+                                                        <span class="ic_qt"></span>[[${faq.cs_content}]]
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="pagination" th:object="${ph}" th:style="${#lists.size(csArticles) == 0 ? 'visibility:hidden;':''}">
+
+                                        <th:block th:if="*{showPrev}">
+                                            <a th:href="@{/admin/cs/faq/list} + ${ph.sc.getQueryString(ph.beginPage-1)}" class="prev">< </a>
+                                        </th:block>
+
+
+                                        <th:block th:each="num:${#numbers.sequence(ph.beginPage, ph.endPage)}">
+                                                <a th:href="@{/admin/cs/faq/list} + ${ph.sc.getQueryString(num)}" th:class="${num == ph.sc.page ? 'num current':'num'}">
+                                                    [[${num}]]
+                                                </a>
+                                        </th:block>
+
+
+                                        <th:block th:if="*{showNext}">
+                                            <a th:href="@{/admin/cs/faq/list} + ${ph.sc.getQueryString(ph.endPage+1)}" class="next"> ></a>
+                                        </th:block>
+                                    </div>
+                                    <div class="btnAdminProd4">
+                                        <a th:href="@{/admin/cs/faq/write}">
+                                            작성
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="blank30"></div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    <th:block th:replace="~{fragments/_footer::footerFragment}"></th:block>
+</th:block>
+<th:block layout:fragment="script">
+<script>
+    $(document).ready(function() {
+        $('.qt_title').click(function(){
+            var content = $(this).closest('tr').next('.answerwrap');
+            if (content.css('display') === 'none') {
+                content.css('display', 'table-row');
+            } else {
+                content.css('display', 'none');
+            }
+        });
+
+        // faq 삭제
+        $('.btnFaqDelete').click(function(e){
+            e.preventDefault();
+                Swal.fire({
+                    title: '해당 글을 삭제하시겠습니까?',
+                    icon: 'question',
+
+                    showCancelButton: true, // cancel버튼 보이기. 기본은 원래 없음
+                    confirmButtonColor: '#3085d6', // confrim 버튼 색깔 지정
+                    cancelButtonColor: '#d33', // cancel 버튼 색깔 지정
+                    confirmButtonText: '확인', // confirm 버튼 텍스트 지정
+                    cancelButtonText: '취소', // cancel 버튼 텍스트 지정
+
+                    reverseButtons: false,
+                }).then(result => {
+                    if(result.isConfirmed){
+                        let cs_no = $(this).attr('data-no');
+
+                        console.log('cs_no ajax : ' + cs_no);
+
+                        const jsonData = {"cs_no": cs_no};
+
+                        ajaxAPI("admin/cs/faq/article", jsonData, "delete").then((response) => {
+                            if(response.result > 0) {
+                                Swal.fire({
+                                        title : '글이 삭제되었습니다.',
+                                        icon : 'success',
+                                        confirmButtonText : '확인'
+                                    }).then(function(){
+                                        location.replace("/Lemo/admin/cs/faq/list");
+                                    });
+                            }else {
+                                alert('error');
+                            }
+                        }).catch((errMsg) => {
+                            console.log(errorMsg);
+                        });
+                    }
+                });
+        });
+
+
+    });
+</script>
+
+</th:block>
+</html>

@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+    날짜 : 2023/03/14
+    이름 : 박종협
+    내용 : diary mapper
+ -->
+<mapper namespace="kr.co.Lemo.dao.DiaryDAO">
+
+    <!-- select -->
+    <select id="selectDiaryArticles" resultType="kr.co.Lemo.domain.ArticleDiaryVO">
+        SELECT
+            a.`arti_no`, a.`arti_title`, COUNT(b.`user_id`), e.`nick`, a.`res_no`
+        FROM
+            `lemo_diary_article` AS a LEFT JOIN
+            `lemo_diary_like`    AS b ON a.`arti_no` = b.`arti_no` LEFT JOIN
+            `lemo_product_reservation` AS c ON a.`res_no` = c.`res_no` LEFT JOIN
+            `lemo_product_accommodation` AS d ON c.`acc_id` = d.`acc_id` LEFT JOIN
+            `lemo_member_userinfo` AS e ON a.`user_id` = e.`user_id`
+        <choose>
+            <when test="orderBySearchType == 'addr'">
+                WHERE d.`acc_addr` LIKE CONCAT('%', #{keyword} , '%')
+            </when>
+            <when test="orderBySearchType == 'title_content'">
+                WHERE a.`arti_title` LIKE CONCAT('%', #{keyword} ,'%')
+            </when>
+        </choose>
+        GROUP BY a.`arti_no`
+        <if test="orderByOption == null">
+            ORDER BY a.`arti_no` DESC
+        </if>
+        <if test="orderByOption == 'recent'">
+            ORDER BY a.`arti_rdate` DESC
+        </if>
+        <if test="orderByOption == 'heart'">
+            ORDER BY a.`arti_like` DESC
+        </if>
+        <if test="orderByOption == 'reply'">
+            ORDER BY a.`arti_comment` DESC
+        </if>
+        LIMIT #{offset}, 10;
+    </select>
+
+    <select id="selectTotalDiarys" resultType="int">
+        SELECT
+            COUNT(DISTINCT a.`arti_no`) AS `arti_no`
+        FROM
+            `lemo_diary_article` AS a LEFT JOIN
+            `lemo_diary_like`    AS b ON a.`arti_no` = b.`arti_no` LEFT JOIN
+            `lemo_product_reservation` AS c ON a.`res_no` = c.`res_no` LEFT JOIN
+            `lemo_product_accommodation` AS d ON c.`acc_id` = d.`acc_id`
+        <choose>
+            <when test="orderBySearchType == 'addr'">
+                WHERE d.`acc_addr` LIKE CONCAT('%', #{keyword} , '%')
+            </when>
+            <when test="orderBySearchType == 'title_content'">
+                WHERE a.`arti_title` LIKE CONCAT('%', #{keyword} ,'%')
+            </when>
+        </choose>
+        <if test="orderByOption == null">
+            ORDER BY a.`arti_no` DESC
+        </if>
+        <if test="orderByOption == 'recent'">
+            ORDER BY a.`arti_rdate` DESC
+        </if>
+        <if test="orderByOption == 'heart'">
+            ORDER BY a.`arti_like` DESC
+        </if>
+        <if test="orderByOption == 'reply'">
+            ORDER BY a.`arti_comment` DESC
+        </if>
+    </select>
+
+    <select id="selectDiarySpots" resultType="kr.co.Lemo.domain.DiarySpotVO">
+        SELECT * FROM `lemo_diary_spot`;
+    </select>
+
+    <select id="selectDiarySpot" resultType="kr.co.Lemo.domain.DiarySpotVO">
+        SELECT d.`acc_name`, e.`nick`, a.*, b.* FROM
+        	`lemo_diary_article`         AS a JOIN
+        	`lemo_diary_spot`            AS b ON a.`arti_no` = b.`arti_no` LEFT JOIN
+        	`lemo_product_reservation`   AS c ON a.`res_no` = c.`res_no` LEFT JOIN
+        	`lemo_product_accommodation` AS d ON c.`acc_id` = d.`acc_id` LEFT JOIN
+        	`lemo_member_userinfo`       AS e ON a.`user_id` = e.`user_id`
+        WHERE b.`arti_no` = #{arti_no};
+    </select>
+    
+    <select id="selectDiaryComment" resultType="kr.co.Lemo.domain.DiaryCommentVO">
+        SELECT
+            T.`com_no`, T.`arti_no`, T.`user_id`, T.`com_pno`, T.`photo`,
+            T.`com_comment`, T.`com_regip`, T.`com_rdate`, T.`com_udate`, T.`nick`, IFNULL(F.`com_replyId`, T.`nick`) AS `com_replyId`, T.`com_state`
+        FROM
+            (SELECT
+                `com_no`, `arti_no`, a.`user_id`, b.`photo`, IFNULL(`com_pno`,`com_no`) AS `com_pno`,
+                `com_comment`, `com_regip`, `com_rdate`, `com_udate`, b.`nick`, IFNULL(`com_replyId`, b.`user_id`) AS `com_replyId`, `com_state`
+            FROM `lemo_diary_comment` AS a JOIN
+                `lemo_member_userinfo` AS b ON a.`user_id` = b.`user_id`
+            WHERE `arti_no`= #{arti_no} )
+        AS T LEFT JOIN
+            (SELECT c.`com_no`, d.`nick` AS com_replyId FROM
+                `lemo_diary_comment` AS c JOIN
+                `lemo_member_userinfo` AS d ON d.`user_id` = c.`com_replyId`
+            WHERE `arti_no`= #{arti_no} )
+        AS F ON T.`com_no` = F.`com_no` ORDER BY `com_rdate` ASC;
+    </select>
+
+    <select id="selectCommentNick" resultType="kr.co.Lemo.domain.UserVO">
+        SELECT b.`nick`, b.`user_id` FROM `lemo_diary_comment` AS a JOIN
+        `lemo_member_userinfo` AS b ON a.`user_id` = b.`user_id`
+        WHERE `com_no`=#{com_no};
+    </select>
+
+    <select id="selectDiaryLike" resultType="int">
+        SELECT COUNT(`user_id`) FROM `lemo_diary_like` WHERE `arti_no` = #{arti_no} AND `user_id` = #{user_id};
+    </select>
+
+    <select id="selectDiaryLikes" resultType="kr.co.Lemo.domain.ArticleDiaryVO">
+        SELECT * FROM `lemo_diary_like` WHERE `user_id` = #{user_id}
+    </select>
+
+    <!-- insert -->
+    <insert id="insertDiaryOriComment" parameterType="kr.co.Lemo.domain.DiaryCommentVO" useGeneratedKeys="true" keyProperty="com_no">
+        INSERT INTO `lemo_diary_comment` SET
+            `arti_no`     = #{arti_no},
+            `user_id`     = #{user_id},
+            `com_comment` = #{com_comment},
+            `com_regip`   = #{com_regip},
+            `com_replyId` = #{com_replyId};
+    </insert>
+
+    <insert id="insertDiaryComment" parameterType="kr.co.Lemo.domain.DiaryCommentVO" useGeneratedKeys="true" keyProperty="com_no">
+        INSERT INTO `lemo_diary_comment` SET
+            `arti_no`     = #{arti_no},
+            `user_id`     = #{user_id},
+            `com_pno`     = #{com_pno},
+            `com_comment` = #{com_comment},
+            `com_regip`   = #{com_regip},
+            `com_replyId` = #{com_replyId};
+    </insert>
+
+    <insert id="insertDiaryLike">
+        INSERT `lemo_diary_like` SET
+        	`arti_no` = #{arti_no},
+        	`user_id` = #{user_id};
+    </insert>
+
+    <!-- update -->
+    <update id="updateComment" parameterType="kr.co.Lemo.domain.DiaryCommentVO">
+        UPDATE `lemo_diary_comment` SET
+            `com_comment` = #{com_comment},
+            `com_regip`   = #{com_regip},
+            `com_udate`   = NOW()
+        WHERE `com_no`=#{com_no};
+    </update>
+
+    <update id="updateArticleCommentPlus">
+        UPDATE `lemo_diary_article` SET
+            `arti_comment` = `arti_comment` + 1 WHERE `arti_no` = #{arti_no};
+    </update>
+
+    <update id="updateArticleCommentMinus">
+        UPDATE `lemo_diary_article` SET
+        `arti_comment` = `arti_comment` - 1 WHERE `arti_no` = #{arti_no};
+    </update>
+
+    <update id="updateOriComment" parameterType="kr.co.Lemo.domain.DiaryCommentVO">
+        UPDATE `lemo_diary_comment` SET
+            `com_state` = #{com_state},
+            `com_regip` = #{com_regip},
+            `com_udate` = NOW()
+        WHERE `com_no`=#{com_no};
+    </update>
+
+    <update id="updateDiaryLikePlus">
+        UPDATE `lemo_diary_article` SET `arti_like` = `arti_like`+1 WHERE `arti_no`=#{arti_no};
+    </update>
+
+    <update id="updateDiaryMinusPlus">
+        UPDATE `lemo_diary_article` SET `arti_like` = `arti_like`-1 WHERE `arti_no`=#{arti_no};
+    </update>
+
+    <update id="updateDiaryHit">
+        UPDATE `lemo_diary_article` SET `arti_hit` = `arti_hit`+1 WHERE `arti_no`=#{arti_no};
+    </update>
+
+    <!-- delete -->
+    <delete id="deleteComment">
+        DELETE FROM `lemo_diary_comment` WHERE `com_no`=#{com_no};
+    </delete>
+
+    <delete id="deleteDiaryLike">
+        DELETE FROM `lemo_diary_like` WHERE `arti_no` = #{arti_no} AND `user_id` = #{user_id};
+    </delete>
+
+    <delete id="deleteDiaryArticle">
+        DELETE FROM `lemo_diary_article` WHERE `arti_no` = #{arti_no};
+    </delete>
+
+    <delete id="deleteDiarySpot">
+        DELETE FROM `lemo_diary_spot` WHERE `arti_no` = #{arti_no};
+    </delete>
+
+    <delete id="deleteDiaryLikes">
+        DELETE FROM `lemo_diary_like` WHERE `arti_no` = #{arti_no};
+    </delete>
+
+    <delete id="deleteDiaryComments">
+        DELETE FROM `lemo_diary_comment` WHERE `arti_no` = #{arti_no};
+    </delete>
+
+    <!-- 공통 키 -->
+
+</mapper>

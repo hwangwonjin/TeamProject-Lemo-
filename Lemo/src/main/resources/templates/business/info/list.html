@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/admin-layout}">
+<th:block layout:fragment="css-js">
+    <link rel="stylesheet" th:href="@{/css/admin/adminSubStyle.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/adminCommon.css}">
+    <script th:src="@{/js/common/jquery.highlight-5.js}"></script>
+</th:block>
+<th:block layout:fragment="content">
+    <main>
+        <div class="main_inner">
+            <!-- 죄측 사이드바 -->
+            <th:block th:replace="~{fragments/_aside::businessFragment}"></th:block>
+            <!-- 우측 메인 컨테이너 -->
+            <section class="main_content">
+                <div class="main_cotent_inner">
+                    <div class="main_content_div">
+                        <div class="col_nav">
+                            <span>상품관리 ></span>
+                            <span>숙박관리</span>
+                        </div>
+                        <div class="col2">
+                            <form th:action="@{/business/info/list}">
+                                <span class="search_reservation_tit">숙박검색</span>
+                                <table class="search_review_table">
+                                    <tr>
+                                        <th>옵션검색</th>
+                                        <td>
+                                            <select name="searchField" class="accOption_select">
+                                                <option value="acc_id" th:selected="${ph.sc.searchField == 'acc_id'}">숙박번호</option>
+                                                <option value="acc_name" th:selected="${ph.sc.searchField == 'acc_name'}">숙박명</option>
+                                            </select>
+                                            <input type="text" class="accOption_search" name="searchWord" placeholder="검색어를 입력하세요" th:value="${param.searchWord}">
+                                        </td>
+
+                                    </tr>
+                                </table>
+                                <button type="button" class="resetOption" onclick="location.href = window.location.origin + window.location.pathname;">초기화</button>
+                                <button type="submit" class="btnSearch">검색</button>
+                                <span class="totalCount">숙박 총 개수 ([[${totalAccs}]])</span>
+                                <div class="board_list">
+                                    <ul>
+                                        <li class="accList1">#</li>
+                                        <li class="accList2">숙박번호</li>
+                                        <li class="accList3">숙박명</li>
+                                        <li class="accList4">평점</li>
+                                        <li class="accList5">등록일</li>
+                                        <li class="accList6">비고</li>
+                                    </ul>
+                                    <th:block th:if="${#lists.size(accs) != 0}">
+                                        <ul th:each="acc,i:${accs}">
+                                            <li class="accList1">[[${ph.totalCnt - ph.sc.offset - i.index}]]</li>
+                                            <li class="accList2" th:text="${acc.acc_id}">11023</li>
+                                            <li class="accList3">
+                                                <a th:href="@{/business/info/view (acc_id=${acc.acc_id})}">[[${acc.acc_name}]]</a>
+                                            </li>
+                                            <li class="accList4">
+                                                <div class="r_rating" style="margin: 0 22%;">
+                                                    <th:block th:if="${acc.acc_rate == 5}">
+                                                        <h6>
+                                                            <th:block th:each="i : ${#numbers.sequence(1, acc.acc_rate)}">
+                                                                <img class="ratingList" th:src="@{/images/admin/full_star.png}">
+                                                            </th:block>
+                                                        </h6>
+                                                    </th:block>
+                                                    <th:block th:if="${acc.acc_rate == 4}">
+                                                        <h6>
+                                                            <th:block th:each="i : ${#numbers.sequence(1, acc.acc_rate)}">
+                                                                <img class="ratingList" th:src="@{/images/admin/full_star.png}">
+                                                            </th:block>
+                                                        </h6>
+                                                    </th:block>
+                                                    <th:block th:if="${acc.acc_rate == 3}">
+                                                        <h6>
+                                                            <th:block th:each="i : ${#numbers.sequence(1, acc.acc_rate)}">
+                                                                <img class="ratingList" th:src="@{/images/admin/full_star.png}">
+                                                            </th:block>
+                                                        </h6>
+                                                    </th:block>
+                                                    <th:block th:if="${acc.acc_rate == 2}">
+                                                        <h6>
+                                                            <th:block th:each="i : ${#numbers.sequence(1, acc.acc_rate)}">
+                                                                <img class="ratingList" th:src="@{/images/admin/full_star.png}">
+                                                            </th:block>
+                                                        </h6>
+                                                    </th:block>
+                                                    <th:block th:if="${acc.acc_rate == 1}">
+                                                        <h6>
+                                                            <th:block th:each="i : ${#numbers.sequence(1, acc.acc_rate)}">
+                                                                <img class="ratingList" th:src="@{/images/admin/full_star.png}">
+                                                            </th:block>
+                                                        </h6>
+                                                    </th:block>
+                                                    <th:block th:if="${acc.acc_rate == 0}">
+                                                        <p>평점이 없습니다</p>
+                                                    </th:block>
+                                                </div>
+                                            </li>
+                                            <li  class="accList5" th:text="${acc.acc_rdate}">2023-02-26</li>
+                                            <!-- th:text="${#strings.substring(acc.acc_rdate, 0, 10)}" -->
+                                            <li  class="accList6">
+                                                <button th:if="${acc.acc_state != 2}" type="button" class="btnDelete" th:data-no="${acc.acc_id}">삭제</button>
+                                                <a th:href="@{/business/info/modify (acc_id=${acc.acc_id})}">
+                                                    <button type="button" class="btnModify" th:data-no="${acc.acc_id}">수정</button>
+                                                </a>
+
+                                            </li>
+                                        </ul>
+                                    </th:block>
+                                    <th:block th:if="${#lists.size(accs) ==0}">
+                                        <div class="noResult">해당 숙박이 없습니다.</div>
+                                    </th:block>
+                                </div>
+                                <div class="pagination" th:object="${ph}" th:style="${#lists.size(accs) == 0 ? 'visibility:hidden;':''}">
+
+                                    <th:block th:if="*{showPrev}">
+                                        <a th:href="@{/business/info/list} + ${ph.sc.getQueryString(ph.beginPage-1)}" class="prev">< </a>
+                                    </th:block>
+
+                                    <th:block th:each="num:${#numbers.sequence(ph.beginPage, ph.endPage)}">
+                                        <a th:href="@{/business/info/list} + ${ph.sc.getQueryString(num)}" th:class="${num == ph.sc.page ? 'num current':'num'}">
+                                            [[${num}]]
+                                        </a>
+                                    </th:block>
+
+                                    <th:block th:if="*{showNext}">
+                                       <a th:href="@{/business/info/list} + ${ph.sc.getQueryString(ph.endPage+1)}" class="next"> ></a>
+                                    </th:block>
+
+                                </div>
+                                <div class="btnAdminProd">
+                                    <a th:href="@{/business/info/write}">
+                                        숙소등록
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="blank30"></div>
+                </div>
+            </section>
+        </div>
+    </main>
+    <th:block th:replace="~{fragments/_footer::footerFragment}"></th:block>
+</th:block>
+<th:block layout:fragment="script">
+<script th:inline="javascript">
+    // 검색 키워드 하이라이트
+    const searchField = document.querySelector('select[name=searchField]');
+    const searchWord = document.querySelector('input[name=searchWord]');
+
+    $(function (){
+        if(searchField.options[searchField.selectedIndex].value === "acc_id"){
+            $('.acc_id').highlight(searchWord.value);
+        }
+        else if(searchField.options[searchField.selectedIndex].value === "acc_name"){
+            $('.prodName').highlight(searchWord.value);
+        }
+    })
+
+    // 숙소 삭제
+    $('.btnDelete').click(function(e){
+        e.preventDefault();
+
+        Swal.fire({
+           title: '숙소를 정말 삭제하시겠습니까?',
+           text: '확인 버튼 클릭 시 삭제 취소가 불가능합니다.',
+           icon: 'warning',
+
+           showCancelButton: true, // cancel버튼 보이기. 기본은 원래 없음
+           confirmButtonColor: '#3085d6', // confrim 버튼 색깔 지정
+           cancelButtonColor: '#d33', // cancel 버튼 색깔 지정
+           confirmButtonText: '승인', // confirm 버튼 텍스트 지정
+           cancelButtonText: '취소', // cancel 버튼 텍스트 지정
+
+           reverseButtons: false, // 버튼 순서 거꾸로
+
+        }).then(result => {
+           // 만약 Promise리턴을 받으면,
+           if (result.isConfirmed) { // 만약 모달창에서 confirm 버튼을 눌렀다면
+
+              let acc_id = $(this).attr('data-no');
+              const jsonData = {"acc_id": acc_id};
+
+              ajaxAPI("business/info/delete", jsonData, "DELETE").then((response) => {
+                  if(response.result > 0) {
+                    sweetalert("해당 숙소가 삭제되었습니다.", "success");
+                    setTimeout(function() {
+                        location.reload();
+                    }, 2000);
+                  } else { alert('error'); }
+              }).catch((errorMsg) => {
+                console.log(errorMsg);
+              });
+
+           }else {
+                sweetalert("숙소 삭제가 취소되었습니다.", "warning");
+           }
+        });
+
+
+    })
+</script>
+</th:block>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="headFragment">
+    <head>
+        <meta charset="UTF-8">
+        <meta th:name="_csrf" th:content="${_csrf.token}"/>
+        <meta th:name="_csrf_header" th:content="${_csrf.headerName}"/>
+        <title>Lemo::[[${title}]]</title>
+        <!-- kakao SDK -->
+        <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.1.0/kakao.min.js"
+                integrity="sha384-dpu02ieKC6NUeKFoGMOKz6102CLEWi9+5RQjWSV0ikYSFFd8M3Wp2reIcquJOemx" crossorigin="anonymous"></script>
+        <!-- favicon -->
+        <link rel="shortcut icon" th:href="@{/images/favicon.ico}" type="image/x-icon">
+        <link rel="icon" th:href="@{/images/favicon.ico}" type="image/x-icon">
+        <!-- 구글 폰트 -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">   
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
+        <!-- jquery -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+        <!-- sweet Alert -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.10/dist/sweetalert2.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.10/dist/sweetalert2.min.js"></script>
+        <!-- 공통 js, css -->
+        <link rel="stylesheet" th:href="@{/css/common.css}">
+        <script th:src="@{/js/common/commonJS.js}"></script>
+        <script th:src="@{/js/common/ajaxAPI.js}"></script>
+
+        <!-- kakaoMap -->
+        <script type="text/javascript" th:src="|//dapi.kakao.com/v2/maps/sdk.js?appkey=${@environment.getProperty('kakao.javascript.key')}&libraries=services,clusterer|"></script>
+
+        <link href="https://webfontworld.github.io/goodchoice/Jalnan.css" rel="stylesheet">
+        <script>
+            const contextPath = "[[@{/}]]";
+            const token = document.head.querySelector("meta[name='_csrf']").content;
+            const header = document.head.querySelector("meta[name='_csrf_header']").content;
+            // SDK를 초기화 합니다. 사용할 앱의 JavaScript 키를 설정해야 합니다.
+            Kakao.init("[[${@environment.getProperty('kakao.javascript.key')}]]");
+
+            // SDK 초기화 여부를 판단합니다.
+            Kakao.isInitialized();
+
+            const channel_id = "[[${@environment.getProperty('kakao.channel.id')}]]";
+            $(function (){
+
+                $('#kakaoChat').click(function (){
+                    Kakao.Channel.chat({
+                        channelPublicId: channel_id // 카카오톡 채널 홈 URL에 명시된 id로 설정합니다.
+                    });
+                })
+
+            })
+
+            function getSwal(message, status){
+                Swal.fire({
+                    title : message,
+                    icon : status,
+                    confirmButtonText : '확인'
+                })
+            }
+        </script>
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async th:src="|https://www.googletagmanager.com/gtag/js?id=${@environment.getProperty('analytics.measurement')}|"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', "[[${@environment.getProperty('analytics.measurement')}]]");
+        </script>
+    </head>
+</th:block>
+</html>

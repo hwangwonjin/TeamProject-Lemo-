@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+    날짜 : 2023/03/14
+    이름 : 서정현
+    내용 : 회원 mapper
+ -->
+<mapper namespace="kr.co.Lemo.dao.UserDAO">
+
+    <!-- insert -->
+    <insert id="rsaveUserInfo" parameterType="kr.co.Lemo.domain.UserVO">
+        INSERT INTO `lemo_member_userinfo` SET
+            `user_id`=#{user_id},
+            `hp`=#{hp},
+            `nick`=#{nick},
+            `type`=#{type},
+            `role`=#{role},
+            `regip`=#{regip},
+            `isNoticeEnabled`=#{isNoticeEnabled},
+            `isLocationEnabled`=#{isLocationEnabled},
+            `isPrivacySelected`=#{isPrivacySelected},
+            `rdate`=NOW(),
+            `udate`=NOW()
+    </insert>
+    <insert id="rsaveHomeUser">
+        INSERT INTO `lemo_member_user` SET
+            `user_id`=#{user_id},
+            `pass`=#{pass}
+    </insert>
+    <insert id="rsaveBusinessInfo" parameterType="kr.co.Lemo.domain.BusinessInfoVO">
+        INSERT INTO `lemo_member_businessinfo` SET
+        `user_id`=#{user_id},
+        `bis_company`=#{bis_company},
+        `bis_ceo`=#{bis_ceo},
+        `bis_openDate`=#{bis_openDate},
+        `bis_bizRegNum`=#{bis_bizRegNum},
+        `bis_tel`=#{bis_tel},
+        `bis_zip`=#{bis_zip},
+        `bis_addr`=#{bis_addr},
+        `bis_addrDetail`=#{bis_addrDetail}
+    </insert>
+
+    <!-- select -->
+    <select id="findByEmailAndType1" resultType="kr.co.Lemo.entity.UserInfoEntity">
+        SELECT * FROM `lemo_member_userinfo` WHERE `user_id` = #{email} AND `type`=1;
+    </select>
+    <select id="countByEmail" resultType="int">
+        SELECT COUNT(*) FROM `lemo_member_userinfo` WHERE `user_id` = #{email};
+    </select>
+    <select id="countByEmailAndType1" resultType="int">
+        SELECT COUNT(*) FROM `lemo_member_userinfo` WHERE `user_id` = #{email} AND `type`=1;
+    </select>
+    <select id="countByNick" resultType="int">
+        SELECT COUNT(*) FROM `lemo_member_userinfo` WHERE `nick` = #{nick};
+    </select>
+    <select id="countByBizRegNum" resultType="int">
+        SELECT COUNT(*) FROM `lemo_member_businessinfo` WHERE `bis_bizRegNum` = #{bizRegNum};
+    </select>
+
+    <!-- update -->
+    <update id="usaveUserPw">
+        UPDATE `lemo_member_user` SET
+            `pass`=#{pass},
+            `pass_udate`=NOW()
+        WHERE `user_id`=#{user_id};
+    </update>
+
+    <update id="updateProfile">
+        UPDATE `lemo_member_userinfo` SET
+        `photo`=#{photo},
+        `udate`=NOW()
+        WHERE `user_id`=#{username};
+    </update>
+
+    <update id="updateNick">
+        UPDATE `lemo_member_userinfo` SET
+        `nick`=#{nick},
+        `udate`=NOW()
+        WHERE `user_id`=#{username};
+    </update>
+
+    <update id="updateHp">
+        UPDATE `lemo_member_userinfo` SET
+        `hp`=#{hp},
+        `udate`=NOW()
+        WHERE `user_id`=#{username};
+    </update>
+
+    <update id="updateIsNoticeEnabled">
+        UPDATE `lemo_member_userinfo` SET
+        `isNoticeEnabled`=#{isNoticeEnabled},
+        `udate`=NOW()
+        WHERE `user_id`=#{username};
+    </update>
+
+    <!--
+       날짜 : 2023/04/08
+       이름 : 서정현
+       내용 : 매시간마다 탈퇴한지 24시간이 지난 회원ID 변경 쿼리문
+    -->
+    <update id="updateWithdrawUserId">
+        <![CDATA[
+            UPDATE `lemo_member_userinfo` u
+            JOIN (
+                SELECT * FROM `lemo_member_userinfo`
+                WHERE `wdate` <= DATE_ADD(NOW(),INTERVAL -1 DAY)
+            ) vals ON u.user_id = vals.user_id
+            SET
+                u.`user_id`= #{username},
+                u.`hp`= 0;
+         ]]>
+    </update>
+
+    <!--
+      날짜 : 2023/04/28
+      이름 : 서정현
+      내용 : 매일 자정 숙박완료 10회이상 회원 level 업데이트 쿼리문
+   -->
+    <update id="usaveLevel">
+        <![CDATA[
+            UPDATE `lemo_member_userinfo` u
+            JOIN (
+               SELECT `user_id`, COUNT(`user_id`) FROM `lemo_product_reservation`
+               WHERE `res_state` = 2
+               GROUP BY `user_id`
+               HAVING COUNT(`user_id`) >= 10
+            ) vals ON u.user_id = vals.user_id
+            SET
+                u.`level`=2;
+        ]]>
+    </update>
+
+    <!-- delete -->
+
+    <!-- 공통 키 -->
+
+</mapper>

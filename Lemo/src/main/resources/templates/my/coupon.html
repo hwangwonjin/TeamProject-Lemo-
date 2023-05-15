@@ -1,0 +1,159 @@
+<!--
+    날짜 : 2023/02/26
+    이름 : 황원진
+    내용 : 마이페이지 coupon HTML 
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="layouts/default-layout">
+    <th:block layout:fragment="css-js">
+        <link rel="stylesheet" th:href="@{/css/my/my.css}">
+    </th:block>
+    <th:block layout:fragment="content">
+            <main>
+                <section id="my">
+                    <th:block th:replace="~{fragments/_aside::myAside}"></th:block>
+                    <div class="content">
+                        <!-- 카테고리 -->
+                        <div class="tab">
+                            <span class="my_title">
+                                쿠폰함
+                            </span>
+                        </div>
+                        <div class="my_Coupon">
+                            <div class="keepMemberCoupon">
+                            <strong>
+                                <span>보유쿠폰</span>
+                            </strong>
+                            <b id="memberTotal">[[${members.size()}]]</b>
+                            <b>장</b>
+                            </div>
+                            <div class="consent" th:if="${members.size() == 0 }">
+                                <p>보유하신 쿠폰이 없습니다.</p>
+                            </div>
+                            <div class="consent" th:if="${members.size() != 0 }">
+                                <div class="coupon_item" th:each="member:${members}" th:if="${#authentication.principal.user_id == member.user_id}">
+                                    <div class="coupon_item_tit">
+                                        <p>[[${member.cp_subject}]]</p>
+                                    </div>
+                                    <div class="coupon_item_price">
+                                        <th:block th:if="${member.cp_disType == 1}">
+                                            <span class="coupon_item_num">[[${member.cp_rate}]]</span>
+                                            <span class="coupon_item_unit">%</span>
+                                        </th:block>
+                                        <th:block th:if="${member.cp_disType == 2}">
+                                            <span class="coupon_item_num">[[${#numbers.formatInteger(member.cp_price, 0, 'COMMA')}]]</span>
+                                            <span class="coupon_item_unit">원</span>
+                                        </th:block>
+                                    </div>
+                                    <div class="coupon_item_info">
+                                        <span class="coupon_item_due">∙ [[${member.mcp_end}]]까지</span>
+                                        <span class="coupon_item_minimum">∙ [[${#numbers.formatInteger(member.cp_minimum, 3, 'COMMA')}]]원 이상 구매시</span>
+                                    </div>
+                                    <button class="coupon_btn" type="button">보유</button>
+                                </div>
+                            </div>
+                            <div class="keepProductCoupon">
+                            <strong>
+                                <span>발급 가능 쿠폰</span>
+                            </strong>
+                            <b id="productTotal">[[${products.size()}]]</b>
+                            <b> 장</b>
+                            </div>
+                            <div class="un_1" th:if="${products.size() == 0}">
+                                <p>발급 가능한 쿠폰이 없습니다.</p>
+                            </div>
+                            <div class="un_1" th:if="${products.size() != 0}" >
+                                <div class="coupon_item" th:each="product:${products}" th:id="rCoupon__${product.cp_id}__">
+                                    <div class="coupon_item_tit">
+                                        <p>[[${product.cp_subject}]]</p>
+                                    </div>
+                                    <div class="coupon_item_price">
+                                        <th:block th:if="${product.cp_disType == 1}">
+                                            <span class="coupon_item_num">[[${product.cp_rate}]]</span>
+                                            <span class="coupon_item_unit">%</span>
+                                        </th:block>
+                                        <th:block th:if="${product.cp_disType == 2}">
+                                            <span class="coupon_item_num">[[${#numbers.formatInteger(product.cp_price, 0, 'COMMA')}]]</span>
+                                            <span class="coupon_item_unit">원</span>
+                                        </th:block>
+                                    </div>
+                                    <div class="coupon_item_info">
+                                        <span class="coupon_item_due">∙ [[${product.cp_end}]]까지</span>
+                                        <span class="coupon_item_minimum">∙ [[${#numbers.formatInteger(product.cp_minimum, 3, 'COMMA')}]]원 이상 구매시</span>
+                                    </div>
+                                    <button class="coupon_btn2" type="button" th:onclick="receiveCoupon([[${product.cp_id}]])">받기</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>  
+                </section>
+            </main>
+    </th:block>
+    <th:block layout:fragment="script">
+        <script>
+            function receiveCoupon(cp_id) {
+
+                let jsonData = { "cp_id" : cp_id };
+
+                Swal.fire({
+                    title: '쿠폰을 받으시겠습니까?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: '확인',
+                    cancelButtonText: '취소',
+                    reverseButtons: false,
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        ajaxAPI("my/coupon", jsonData, "POST").then((response)=>{
+                            if(response == 101) {
+                                Swal.fire('재고량이 없습니다.');
+                            }else if(response == 1) {
+                                $('#rCoupon'+cp_id).find('.coupon_btn2').removeAttr('onclick');
+                                $('#rCoupon'+cp_id).find('.coupon_btn2').removeAttr('id');
+                                $('#rCoupon'+cp_id).find('.coupon_btn2').attr('class', 'coupon_btn');
+
+                                const rCoupon = $('#rCoupon'+cp_id).clone();
+                                $('#rCoupon'+cp_id).remove();
+                                $('.consent > p').remove();
+                                $('.consent').append(rCoupon);
+                                $('#memberTotal').text( Number( $('#memberTotal').text() ) + 1 );
+                                $('#productTotal').text( Number( $('#productTotal').text() ) - 1 );
+
+                                if( $('.un_1 > .coupon_item').length == 0 ) {
+                                    $('.un_1').append('<p>발급중인 쿠폰이 없습니다.</p>');
+                                }
+
+                            }else {
+                                Swal.fire('다시 시도해주세요.!');
+                            }
+                        });
+                    }
+                });
+            }
+
+            $(document).on('mouseover', '.coupon_item_tit > p', function(){
+                let scroll = 0;
+                let scrollP = $(this);
+
+                const interval = setInterval(function(){
+                    scrollP.scrollLeft(scroll);
+                    scroll = scroll + 0.8
+
+                    if(scroll >= 500) {
+                        clearInterval(interval)
+                        scroll = 0;
+                    }
+                }, 12.5);
+
+                $(document).on('mouseout', '.coupon_item_tit > p', function(){
+                    clearInterval(interval)
+                    scrollP.scrollLeft(0);
+                });
+            });
+        </script>
+    </th:block>
+</html>

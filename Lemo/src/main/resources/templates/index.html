@@ -1,0 +1,277 @@
+<!--
+    날짜 : 2023/02/25
+    이름 : 이원정
+    내용 : 메인 HTML
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/default-layout}">
+<th:block layout:fragment="css-js">
+    <!-- 스타일 css 적용 -->
+    <link rel="stylesheet" th:href="@{/css/index/indexStyle.css}">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <!-- bxslider plugin -->
+    <script src="//cdn.jsdelivr.net/bxslider/4.2.12/jquery.bxslider.min.js"></script>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/bxslider/4.2.12/jquery.bxslider.css">
+    <!-- slick slider plugin-->
+    <script src="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css"/>
+    <!-- JS -->
+    <script th:src="@{/js/commonJS.js}"></script>
+</th:block>
+<th:block layout:fragment="content">
+    <!-- 메인 -->
+    <main>
+        <div class="main_inner">
+            <!-- 슬라이더 -->
+            <div class="main_slider">
+                <div class="slider">
+                    <th:block th:each="event:${map.event}">
+                        <a th:href="@{/cs/event/view(cs_cate=${event.cs_cate}, cs_no=${event.cs_no})}">
+                            <img th:src="@{/img/cs/} + ${event.cs_no} + '/' + ${event.cs_eventMainBannerImg}" alt="메인 배너">
+                        </a>
+                    </th:block>
+                </div>
+            </div>
+            <div class="blank30"></div>
+            <!-- 바로 가기 -->
+            <div class="main_shortCut">
+                <ul>
+                    <li class="main_shortCut_icon">
+                        <a th:href="@{/product/list?accTypes=1}">
+                            <span><img th:src="@{/images/index/shortcut_motel.png}" alt="shortCut motel" style="width: 59px;"></span>
+                        </a>
+                    </li>
+                    <li class="main_shortCut_icon">
+                        <a th:href="@{/product/list?accTypes=2}">
+                            <span><img th:src="@{/images/index/shortcut_hotel.png}" alt="shortCut motel" style="width: 66px;"></span>
+                        </a>
+                    </li>
+                    <li class="main_shortCut_icon">
+                        <a th:href="@{/product/list?accTypes=3&keyword=강원도}">
+                            <span><img th:src="@{/images/index/shortcut_pension.png}" alt="shortCut motel"
+                                       style="width: 55px;"></span>
+                        </a>
+                    </li>
+                    <li class="main_shortCut_icon">
+                        <a th:href="@{/product/list?accTypes=4&keyword=홍대}">
+                            <span><img th:src="@{/images/index/shortcut_dormitory.png}" alt="shortCut motel"
+                                       style="width: 59px;"></span>
+                        </a>
+                    </li>
+                    <li class="main_shortCut_icon">
+                        <a th:href="@{/product/list?accTypes=5&keyword=강원도}">
+                            <span><img th:src="@{/images/index/shortcut_camp.png}" alt="shortCut motel" style="width: 60px;"></span>
+                        </a>
+                    </li>
+                    <li class="main_shortCut_icon">
+                        <a th:href="@{/diary/list}">
+                            <span><img th:src="@{/images/index/diary2.png}" alt="shortCut motel"
+                                       style="padding-top: 6px;width: 53px;"></span>
+                        </a>
+                    </li>
+                </ul>
+                <ul>
+                    <li><p>모텔</p></li>
+                    <li><p>호텔</p></li>
+                    <li><p>펜션</p></li>
+                    <li><p>게스트하우스</p></li>
+                    <li><p>캠핑・글램핑</p></li>
+                    <li><p>여행일기</p></li>
+                </ul>
+            </div>
+
+            <div class="blank80"></div>
+            <!-- 인기 TOP4 -->
+            <div class="main_top_container">
+                <div class="main_top_tit"># <i>BEST</i></div>
+                <div class="main_top_box">
+                    <div class="main_top_table best">
+                        <th:block th:each="best:${map.best}">
+                            <div class="main_top_item1">
+                                <a th:href="@{/product/view?acc_id=} + ${best.acc_id}">
+                                    <div class="main_top_item1_click">
+                                        <div class="main_top_item1_img">
+                                            <img th:src="@{/img/product/} + ${best.province_no} + '/' + ${best.acc_id} + '/' + ${best.acc_thumbs.split('/')[0]}" alt="메인 아이템">
+                                        </div>
+                                        <div class="main_top_item_stayName">
+                                            <span>[[${best.acc_name}]]</span>
+                                        </div>
+                                        <div class="main_top_item_rating" th:style="${best.acc_rate gt 0? '':'height:22.4px;'}">
+                                            <!-- 임시 평점 -->
+                                            <div class="star-ratings">
+                                                <div class="star-ratings-fill space-x-2 text-lg"
+                                                     :style="{ width: ratingToPercent + '%' }">
+                                                    <th:block th:if="${best.acc_rate ne 0}">
+                                                        <span th:each="i:${#numbers.sequence(0, best.acc_rate-1)}">★</span>
+                                                    </th:block>
+                                                </div>
+                                                <div class="star-ratings-base space-x-2 text-lg">
+                                                    <th:block th:if="${best.acc_rate ne 0}">
+                                                        <span th:each="i:${#numbers.sequence(0, best.acc_rate-1)}">★</span>
+                                                    </th:block>
+                                                </div>
+                                            </div>
+                                            <div class="main_review_count">
+                                                <span>[[${best.acc_review}]]</span>
+                                            </div>
+                                        </div>
+                                        <div class="main_top_item_day">
+                                            <span>1박 요금</span>
+                                        </div>
+                                        <div class="main_top_item_price">
+                                            <span>KRW <i>[[${#numbers.formatInteger(best.now_price, 3, 'COMMA')}]]</i></span>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </th:block>
+                    </div>
+                </div>
+            </div>
+            <div class="blank60"></div>
+            <!-- 재방문율 인기 TOP4 -->
+            <div class="main_top_container">
+                <div class="main_top_tit"># 재방문<i> 100%</i></div>
+                <div class="main_top_box">
+                    <div class="main_top_table re">
+                        <th:block th:each="re:${map.revisit}">
+                            <div class="main_top_item1">
+                                <a th:href="@{/product/view?acc_id=} + ${re.acc_id}">
+                                    <div th:class="'main_top_item1_click ' + ${#lists.size(map.revisit) lt 4? 'noFull':''}">
+                                        <div class="main_top_item1_img">
+                                            <img th:src="@{/img/product/} + ${re.province_no} + '/' + ${re.acc_id} + '/' + ${re.acc_thumbs.split('/')[0]}" alt="메인 아이템">
+                                        </div>
+                                        <div class="main_top_item_stayName">
+                                            <span>[[${re.acc_name}]]</span>
+                                        </div>
+                                        <div class="main_top_item_rating" th:style="${re.acc_rate gt 0? '':'height:22.4px;'}">
+                                            <!-- 임시 평점 -->
+                                            <div class="star-ratings">
+                                                <div class="star-ratings-fill space-x-2 text-lg"
+                                                     :style="{ width: ratingToPercent + '%' }">
+                                                    <th:block th:if="${re.acc_rate ne 0}">
+                                                        <span th:each="i:${#numbers.sequence(0, re.acc_rate-1)}">★</span>
+                                                    </th:block>
+                                                </div>
+                                                <div class="star-ratings-base space-x-2 text-lg">
+                                                    <th:block th:if="${re.acc_rate ne 0}">
+                                                        <span th:each="i:${#numbers.sequence(0, re.acc_rate-1)}">★</span>
+                                                    </th:block>
+                                                </div>
+                                            </div>
+                                            <div class="main_review_count">
+                                                <th:block th:if="${re.acc_rate ne 0}">
+                                                    <span>[[${re.acc_review}]]</span>
+                                                <th:block th:if="${re.acc_rate ne 0}">
+                                            </div>
+                                        </div>
+                                        <div class="main_top_item_day">
+                                            <span>1박 요금</span>
+                                        </div>
+                                        <div class="main_top_item_price">
+                                            <span>KRW <i>[[${#numbers.formatInteger(re.now_price,0, 'COMMA')}]]</i></span>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </th:block>
+                    </div>
+                </div>
+            </div>
+            <div class="blank60"></div>
+            <!-- Weekly Best Diary -->
+            <div class="main_top_container">
+                <div class="main_top_tit">#<i> Weekly</i> Best Diary
+                    <a th:href="@{/diary/list}" class="main_top_sub_tit">> 더보기</a>
+                </div>
+                <div class="main_top_box">
+                    <th:block th:if="${#lists.size(map.diary) gt 0}">
+                        <div class="main_best_table">
+                        <!-- item 1 -->
+                            <th:block th:each="diary : ${map.diary}">
+                                <div class="main_best_item1">
+                                    <a th:href="@{diary/view(arti_no=${diary.arti_no}, res_no=${diary.res_no})}">
+                                        <div class="main_best_item1_click">
+                                            <div class="main_best_item1_img">
+                                                <img th:src="@{/img/diary/} + ${diary.arti_no} + '/' + ${diary.arti_thumb.split('/')[0]}"/>
+                                            </div>
+                                            <div class="main_top_item1_writer">
+                                                <div class="item_left">
+                                                    <span class="nick">[[${diary.user_nick}]]</span>
+                                                </div>
+                                                <div class="item_right">
+                                                <span class="date">
+                                                    [[${#strings.substring(diary.arti_rdate, 2, 10)}]]
+                                                </span>
+                                                <span class="heart">
+                                                    <img th:src="@{/images/index/full-heart.png}">
+                                                    <p>[[${diary.arti_like}]]</p>
+                                                </span>
+                                                <span class="replyCount">
+                                                    <img th:src="@{/images/index/comment.png}">
+                                                    <p>[[${diary.arti_comment}]]</p>
+                                                </span>
+                                                </div>
+                                            </div>
+                                            <div class="main_top_item1_review">
+                                                <div class="review_txt">
+                                                    [[${diary.arti_title}]]
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            </th:block>
+                        </div>
+                    </th:block>
+                    <th:block th:if="${#lists.size(map.diary) == 0}">
+                        <div class="main_best_table" style="display: block; text-align: center; min-height: 100px;border-bottom: 2px solid #e4e4e4;">
+                            <span>등록된 여행일기가 없습니다.</span>
+                        </div>
+                    </th:block>
+                </div>
+            </div>
+            <div class="blank60"></div>
+            <!-- 공지사항 -->
+            <div class="main_top_container">
+                <div class="main_top_tit"># NOTICE
+                    <a th:href="@{/cs/notice}" class="main_top_sub_tit">> 더보기</a>
+                </div>
+                <div class="main_notice_board">
+                    <ul class="notice_board_inner">
+                        <th:block th:if="${#lists.size(map.notice) gt 0}">
+                            <th:block th:each="notice : ${map.notice}">
+                                <li class="notice_item1">
+                                    <a class="notice_link" th:href="@{/cs/notice(cs_no=${notice.cs_no})}">
+                                        <span class="text_tit"><i>[[${#strings.equals(notice.cs_type, "notice")? "공지사항":"이벤트당첨자안내" }]]</i> [[${notice.cs_title}]]</span>
+                                        <span class="text_date">[[${#strings.substring(notice.cs_rdate, 2, 10)}]]</span>
+                                    </a>
+                                </li>
+                            </th:block>
+                        </th:block>
+                        <th:block th:if="${#lists.size(map.notice) == 0}">
+                            <li class="notice_item1">
+                                <a class="notice_link" style="text-align:center;">
+                                    <span class="text_tit" style="width:100%;min-height: 100px;line-height: 100px;">등록된 공지사항이 없습니다.</span>
+                                </a>
+                            </li>
+                        </th:block>
+                    </ul>
+                </div>
+            </div>
+            <div class="blank120"></div>
+        </div>
+
+    </main>
+</th:block>
+
+<th:block layout:fragment="script">
+    <script>
+        const revisitCnt = "[[${#lists.size(map.revisit)}]]";
+        const bestCnt = "[[${#lists.size(map.best)}]]";
+    </script>
+    <script th:src="@{/js/index.js}"></script>
+</th:block>

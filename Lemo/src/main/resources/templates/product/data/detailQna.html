@@ -1,0 +1,99 @@
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+
+    <div class="prodQna" style="display:block;">
+        <div id="top-wrap">
+            <form id="inputSearchForm" action="#" onSubmit="return false;">
+                <div class="board_schbox">
+                    <input type="text" class="ip_board-sch" id="inputSearch" placeholder="제목으로 검색">
+                    <button type="submit" class="btn_sch"><span class="blind">검색</span></button>
+                    <span class="txt_result" th:if="${ph.sc.searchWord != null}">총 검색 결과 <strong id="txtSearchCount">[[${totalCnt}]]건</strong></span>
+                </div>
+            </form>
+            <!-- 버튼 -->
+            <div class="board_btnswrap">
+                <ul>
+                    <li class="bt_question">
+                        <a href="#" id="w_qna">문의하기</a>
+                    </li>
+                    <li class="tab_rt"><a th:href="@{/my/qna}" class="my">내 문의보기</a></li>
+                    <li class="tab_rt"><a href="#" class="tl">전체 문의보기</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="board_qna">
+            <!-- 문의목록 -->
+            <div id="qnaList-wrapper">
+                <table class="tb_board tb_qna">
+                    <thead>
+                    <tr>
+                        <th class="hnum">번호</th>
+                        <th class="htit">
+                            <a href="#" class="dropctrl uxeDropdown">
+                                답변상태<span class="blind arr">열기</span>
+                            </a>
+                            <ul id="board_as_status" class="board_dropbox">
+                                <li><a href="#" data-ans-kind="">전체</a></li>
+                                <li><a href="#" data-ans-kind="NA">검토중</a></li>
+                                <li><a href="#" data-ans-kind="CA">답변완료</a></li>
+                            </ul>
+                        </th>
+                        <th>제목</th>
+                        <th>문의자</th>
+                        <th>등록일</th>
+                    </tr>
+                    </thead>
+                    <tr th:if="${qnas.size() == 0}">
+                        <td colspan="6">
+                            등록된 문의글이 없습니다.
+                        </td>
+                    </tr>
+                    <tbody  th:each="qna,i : ${qnas}">
+                        <tr th:id="'q' + ${qna.qna_no}">
+                            <td>[[*{totalCnt-ph.sc.offset} - ${i.index}]]</td>
+                            <td th:class="${qna.qna_reply == null ? 'ing' : 'end'}"
+                                th:text="${qna.qna_reply == null ? '검토중' : '답변완료'}"></td>
+                            <!--D: 내가 열수 없는 글일 경우, locked 클래스명이 붙음-->
+                            <td class="qt_tit">
+                                <a href="#" th:classappend="${qna.qna_secret == 1 ? 'locked':''}"
+                                            th:attr="data-locked=${user_id == qna.user_id || qna.qna_secret == 0 ? 0 : 1}">[[${qna.qna_title}]]
+                                    <span class="ic_lock" th:if="${qna.qna_secret == 1}">비밀글</span>
+                                </a>
+                            </td>
+                            <td>[[${qna.nick}]]</td>
+                            <td>[[${qna.qna_rdate.substring(2,10)}]]</td>
+                        </tr>
+                        <tr th:id="'a'+${qna.qna_no}" class="answerwrap" th:if="${user_id == qna.user_id || qna.qna_secret == 0}">
+                            <td colspan="6">
+                                <div class="qt">
+                                    <span class="ic_qt">Q</span>[[${qna.qna_content}]]
+                                </div>
+                                <div class="as" th:if="${qna.qna_reply != null}">
+                                    <span class="ic_as">A</span>[[${qna.qna_reply}]]
+                                </div>
+                                <p class="reginfo" th:if="${qna.qna_reply != null}">
+                                    <span class="wh">판매자의 답변</span>
+                                    <span class="date">등록일 : <em>[[${qna.qna_reply_date}]]</em></span>
+                                </p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <!-- 페이징 -->
+        <div class="paging" th:object="${ph}" th:if="${qnas.size() > 0}">
+            <span class="prev" th:if="*{showPrev}">
+                <a th:href="@{/product/detail-qna} + ${ph.sc.getQueryString(ph.beginPage-1)}" onclick="movePage(event,this,'qna')"></a>
+            </span>
+            <span class="on" th:each="num:${#numbers.sequence(ph.beginPage, ph.endPage)}" th:class="${num == ph.sc.page} ? 'on':'off'">
+                <a th:href="@{/product/detail-qna} + ${ph.sc.getQueryString(num)}" onclick="movePage(event,this,'qna')">[[${num}]]</a>
+            </span>
+            <span class="next" th:if="*{showNext}">
+                <a th:href="@{/product/detail-qna} + ${ph.sc.getQueryString(ph.endPage+1)}" onclick="movePage(event,this,'qna')"></a>
+            </span>
+        </div>
+        <div th:if="${qnas.size()==0}" style="margin-bottom:100px"></div>
+    </div>
+</html>

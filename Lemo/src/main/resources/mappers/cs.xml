@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+    날짜 : 2023/03/08
+    이름 : 황원진
+    내용 : 고객센터 mapper
+ -->
+<mapper namespace="kr.co.Lemo.dao.CsDAO">
+
+    <!-- select -->
+    <!-- cs 목록 공통 -->
+    <select id="selectCsArticles" parameterType="kr.co.Lemo.utils.SearchCondition" resultType="kr.co.Lemo.domain.CsVO">
+        SELECT * FROM `lemo_cs` WHERE `cs_cate` =#{cs_cate}
+        order by `cs_eventBannerState` DESC, `cs_rdate` DESC
+        limit #{offset}, 10;
+    </select>
+
+    <!-- 관리자 이벤트 목록-->
+    <select id="selectAdminEventArticles" parameterType="kr.co.Lemo.utils.SearchCondition" resultType="kr.co.Lemo.domain.CsVO">
+        SELECT * FROM `lemo_cs` WHERE `cs_cate` =#{cs_cate}
+        order by `cs_no` DESC
+        limit #{offset}, 10;
+    </select>
+
+    <select id="countEventArticles" resultType="java.lang.Integer">
+        select count(*) from `lemo_cs` where `cs_cate` =#{cs_cate};
+    </select>
+
+    <!-- 게시글 상세보기 -->
+    <select id="selectCsArticle" resultType="kr.co.Lemo.domain.CsVO">
+        select * from `lemo_cs` where `cs_no`=#{cs_no};
+    </select>
+
+    <!-- 이벤트 이전글 다음글 -->
+    <select id="selectEventPrev" resultType="kr.co.Lemo.domain.CsVO">
+         SELECT * FROM `lemo_cs` WHERE `cs_cate`=#{cs_cate} and `cs_eventBannerState`='1' and <![CDATA[ `cs_no`<#{cs_no} order BY `cs_no` DESC LIMIT 1;]]>
+    </select>
+    <select id="selectEventNext" resultType="kr.co.Lemo.domain.CsVO">
+         SELECT * FROM `lemo_cs` WHERE `cs_cate`=#{cs_cate} and `cs_eventBannerState`='1' and <![CDATA[`cs_no`>#{cs_no} order BY `cs_no` asc LIMIT 1;]]>
+    </select>
+
+    <select id="selectFaqArticles" parameterType="kr.co.Lemo.utils.SearchCondition" resultType="kr.co.Lemo.domain.CsVO">
+        select * from `lemo_cs` where `cs_cate` =#{cs_cate}
+        <choose>
+            <when test="cs_type == 'event'">AND `cs_type` = 'event' ORDER BY `cs_no` DESC LIMIT #{offset}, 10;</when>
+            <when test="cs_type == 'payment'">AND `cs_type` = 'payment' ORDER BY `cs_no` DESC LIMIT #{offset}, 10;</when>
+            <when test="cs_type == 'cancel'">AND `cs_type` = 'cancel' ORDER BY `cs_no` DESC LIMIT #{offset}, 10;</when>
+            <when test="cs_type == 'benefit'">AND `cs_type` = 'benefit' ORDER BY `cs_no` DESC LIMIT #{offset}, 10;</when>
+            <when test="cs_type == 'use'">AND `cs_type` = 'use' ORDER BY `cs_no` DESC LIMIT #{offset}, 10;</when>
+            <when test="cs_type == 'info'">AND `cs_type` = 'info' ORDER BY `cs_no` DESC LIMIT #{offset}, 10;</when>
+            <when test="cs_type == 'review'">AND `cs_type` = 'review' ORDER BY `cs_no` DESC LIMIT #{offset}, 10;</when>
+            <when test="cs_type == 'refund'">AND `cs_type` = 'refund' ORDER BY `cs_no` DESC LIMIT #{offset}, 10;</when>
+            <when test="cs_type == 'point'">AND `cs_type` = 'point' ORDER BY `cs_no` DESC LIMIT #{offset}, 10;</when>
+        </choose>
+    </select>
+
+    <select id="countFaqArticles"  resultType="java.lang.Integer">
+        select count(*) from `lemo_cs` where `cs_cate` =#{cs_cate} and `cs_type` =#{cs_type};
+    </select>
+
+    <select id="selectQnaArticles" resultType="kr.co.Lemo.domain.CsVO">
+        select * from `lemo_cs` where `cs_cate` =#{cs_cate} and `user_id`=#{user_id} order by `cs_no` desc;
+    </select>
+
+
+    <!-- 고객센터 약관 -->
+    <select id="selectTerm" resultType="kr.co.Lemo.domain.TermVO">
+        SELECT * <include refid="member_terms_join"/> where a.termsType_no = 1;
+    </select>
+
+    <select id="selectLocation" resultType="kr.co.Lemo.domain.TermVO">
+        SELECT * <include refid="member_terms_join"/> where a.termsType_no = 6;
+    </select>
+
+    <select id="selectPrivacyRequire" resultType="kr.co.Lemo.domain.TermVO">
+        SELECT * <include refid="member_terms_join"/> where a.termsType_no = 3;
+    </select>
+
+    <select id="selectFourTeen" resultType="kr.co.Lemo.domain.TermVO">
+        SELECT * <include refid="member_terms_join"/> where a.termsType_no = 2;
+    </select>
+
+    <select id="selectMarketing" resultType="kr.co.Lemo.domain.TermVO">
+        SELECT * <include refid="member_terms_join"/> where a.termsType_no = 5;
+    </select>
+
+    <!-- 관리자 cs -->
+
+    <select id="selectAdminQnaArticles" resultType="kr.co.Lemo.domain.CsVO">
+        SELECT a.*, b.`nick` FROM `lemo_cs` AS a
+        JOIN `lemo_member_userinfo` AS b
+        ON a.user_id = b.user_id
+        WHERE a.`cs_cate` =#{cs_cate}
+        order by `cs_no` DESC
+        LIMIT #{offset}, 10;
+    </select>
+
+    <select id="selectAdminCsArticle" resultType="kr.co.Lemo.domain.CsVO">
+        SELECT a.*, b.`nick` FROM `lemo_cs` AS a
+        JOIN `lemo_member_userinfo` AS b
+        ON a.user_id = b.user_id
+        WHERE a.`cs_cate` =#{cs_cate} and a.`cs_no` =#{cs_no};
+    </select>
+
+    <!-- 관리자 약관 목록 -->
+    <select id="selectAdminTerms" parameterType="kr.co.Lemo.utils.SearchCondition" resultType="kr.co.Lemo.domain.TermVO">
+        SELECT a.*, b.`termsType_type_ko` FROM `lemo_member_terms` AS a
+        JOIN `lemo_member_termstype` AS b ON a.termsType_no=b.termsType_no
+        <if test="termsType_no != 0">
+            and a.`termsType_no`=#{termsType_no}
+        </if>
+        order by `terms_no` DESC
+        Limit #{offset}, 10;
+    </select>
+
+    <!-- 약관 목록 페이징 -->
+    <select id="countAdminTerms" parameterType="kr.co.Lemo.utils.SearchCondition" resultType="java.lang.Integer">
+        select count(*) from `lemo_member_terms`
+        <if test="termsType_no != 0">
+            where `termsType_no`=#{termsType_no}
+        </if>;
+    </select>
+
+    <!-- 약관 유형 목록-->
+    <select id="selectAdminTermsType" resultType="kr.co.Lemo.domain.TermVO">
+        SELECT `termsType_no`, `termsType_type_ko` from `lemo_member_termstype`;
+    </select>
+
+    <!-- 관리자 약관 상세보기-->
+    <select id="selectTermArticle" resultType="kr.co.Lemo.domain.TermVO">
+        SELECT a.*, b.`termsType_type_ko` FROM `lemo_member_terms` AS a
+        JOIN `lemo_member_termstype` AS b ON a.termsType_no=b.termsType_no
+        where a.`terms_no`=#{terms_no};
+    </select>
+
+    <!-- 관리자 메인 공지사항 -->
+    <select id="selectAdminNoticeArticle" resultType="kr.co.Lemo.domain.CsVO">
+        SELECT * FROM `lemo_cs`
+        WHERE `cs_cate`='notice'
+        ORDER BY `cs_rdate` DESC
+        LIMIT 5;
+    </select>
+
+    <!-- 관리자 메인 1:1문의 -->
+    <select id="selectMainQnaArticles" resultType="kr.co.Lemo.domain.CsVO">
+        SELECT a.*, b.`nick` FROM `lemo_cs` AS a
+        JOIN `lemo_member_userinfo` AS b
+        ON a.user_id = b.user_id
+        WHERE a.`cs_cate` = 'qna'
+        order by `cs_no` DESC
+        LIMIT 5;
+    </select>
+
+
+
+    <!-- insert -->
+        <insert id="insertEventArticle" parameterType="java.util.Map" useGeneratedKeys="true" keyProperty="cs_no">
+            insert into `lemo_cs` set
+            `user_id`=#{user_id},
+            `cs_cate`=#{cs_cate},
+            `cs_type`=#{cs_type},
+            `cs_title`=#{cs_title},
+            `cs_content`=#{cs_content},
+            `cs_regip`=#{cs_regip},
+            `cs_rdate`=NOW(),
+            `cs_eventMainBannerImg`=#{cs_eventMainBannerImg},
+            `cs_eventbannerImg`=#{cs_eventbannerImg},
+            `cs_eventViewImg`=#{cs_eventViewImg},
+            `cs_eventStart`=#{cs_eventStart},
+            `cs_eventEnd`=#{cs_eventEnd};
+        </insert>
+
+
+        <insert id="insertNoticeArticle">
+            insert into `lemo_cs` set
+            `user_id`=#{user_id},
+            `cs_cate`=#{cs_cate},
+            `cs_type`=#{cs_type},
+            `cs_title`=#{cs_title},
+            `cs_content`=#{cs_content},
+            `cs_regip`=#{cs_regip},
+            `cs_rdate`=NOW();
+        </insert>
+
+        <insert id="insertArticleQna">
+            insert into `lemo_cs` set
+            `user_id` =#{user_id},
+            `cs_hp` =#{cs_hp},
+            `cs_email` =#{cs_email},
+            `cs_cate` =#{cs_cate},
+            `cs_type`=#{cs_type},
+            `cs_title`=#{cs_title},
+            `cs_content`=#{cs_content},
+            `cs_regip`=#{cs_regip},
+            `cs_rdate`=NOW();
+        </insert>
+
+        <insert id="insertFaqArticle">
+            insert into `lemo_cs` set
+            `user_id` =#{user_id},
+            `cs_hp` =#{cs_hp},
+            `cs_email` =#{cs_email},
+            `cs_cate` =#{cs_cate},
+            `cs_type`=#{cs_type},
+            `cs_title`=#{cs_title},
+            `cs_content`=#{cs_content},
+            `cs_regip`=#{cs_regip},
+            `cs_rdate`=NOW();
+        </insert>
+
+        <insert id="insertTermArticle">
+            insert into `lemo_member_terms` set
+            `termsType_no`=#{termsType_no},
+            `terms_title` =#{terms_title},
+            `terms_content` =#{terms_content};
+        </insert>
+
+
+
+    <!-- update -->
+    <update id="updateQnaArticle">
+        update `lemo_cs` set
+        `cs_reply`=#{cs_reply},
+        `cs_reply_date`=NOW()
+        where `cs_no` =#{cs_no};
+    </update>
+
+    <update id="updateEventArticle">
+        update `lemo_cs` set
+        `cs_title`=#{cs_title},
+        `cs_content`=#{cs_content},
+        `cs_regip`=#{cs_regip},
+        `cs_eventMainBannerImg`=#{cs_eventMainBannerImg},
+        `cs_eventbannerImg`=#{cs_eventbannerImg},
+        `cs_eventViewImg`=#{cs_eventViewImg},
+        `cs_eventStart`=#{cs_eventStart},
+        `cs_eventEnd`=#{cs_eventEnd}
+        where `cs_no` =#{cs_no};
+    </update>
+
+    <update id="updateAdminNotice">
+        update `lemo_cs` set
+            `cs_title` =#{cs_title},
+            `cs_content` =#{cs_content}
+            where `cs_no`=#{cs_no};
+    </update>
+
+    <update id="updateFaqArticle">
+        update `lemo_cs` set
+            `cs_type` =#{cs_type},
+            `cs_title` =#{cs_title},
+            `cs_content` =#{cs_content}
+            where `cs_no`=#{cs_no};
+    </update>
+
+
+    <update id="updateMainBanner">
+        UPDATE `lemo_cs` SET
+        `cs_eventMainBannerState`=#{cs_eventMainBannerState}
+        WHERE `cs_no`=#{cs_no};
+    </update>
+
+    <update id="updateEventBanner">
+        UPDATE `lemo_cs` SET
+        `cs_eventBannerState`=#{cs_eventBannerState}
+        WHERE `cs_no`=#{cs_no};
+    </update>
+
+    <!-- 약관 업데이트 -->
+    <update id="updateTerms">
+        update `lemo_member_terms` set
+        `termsType_no` =#{termsType_no},
+        `terms_title` =#{terms_title},
+        `terms_content` =#{terms_content}
+        where `terms_no`=#{terms_no};
+
+    </update>
+
+
+
+    <!-- delete -->
+    <!-- 공통 단일 게시물 삭제 -->
+    <delete id="deleteFaqWrite">
+        delete from `lemo_cs` where `cs_no` =#{cs_no};
+    </delete>
+
+    <!-- qna 선택 삭제 -->
+    <delete id="deleteQnaList">
+        delete from `lemo_cs`
+        where `cs_no` in
+        <foreach collection="checkList" index="index" item="checkList" open="(" close=")" separator=",">
+            #{checkList}
+        </foreach>
+    </delete>
+
+    <!-- term 게시물 삭제-->
+    <delete id="deleteTerm">
+        DELETE FROM `lemo_member_terms` WHERE `terms_no` =#{terms_no};
+    </delete>
+
+    <!-- 공통 키 -->
+    <sql id="member_terms_join">
+        FROM `lemo_member_terms` AS a
+        left JOIN `lemo_member_termstype` AS b ON a.termsType_no = b.termsType_no
+    </sql>
+
+
+
+</mapper>

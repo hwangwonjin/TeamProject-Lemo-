@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/default-layout}">
+        <th:block layout:fragment="css-js">
+            <!-- RangeSlider -->
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/css/ion.rangeSlider.min.css"/>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/js/ion.rangeSlider.min.js"></script>
+            <!-- Date Range Picker -->
+            <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+            <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+            <script th:src="@{/js/product/daterangepicker.js}"></script>
+            <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+            <link rel="stylesheet" th:href="@{/css/product/product.css}">
+        </th:block>
+        <th:block layout:fragment="content">
+            <main id="productResult">
+                <div id="result">
+                    <div class="listSearch">
+                        <div id="filter">
+                            <a href="#" onclick="return false" class="popup_area"></a>
+                            <select name="sort">
+                                <option value="review" th:selected="${ph.sc.sort == 'review'}">후기 많은 순</option>
+                                <option value="score" th:selected="${ph.sc.sort == 'score'}">평점 높은 순</option>
+                                <option value="rowPrice" th:selected="${ph.sc.sort == 'rowPrice'}">낮은 가격 순</option>
+                                <option value="distance" th:selected="${ph.sc.sort == 'distance'}">거리 순</option>
+                                <!--<option value="revisit">재방문율 높은 순</option>-->
+                            </select>
+                            <!-- 팝업 메뉴 -->
+                            <div id="popupFilter" class="popup popup_area">
+                                <form id="popupForm" onsubmit="clearForm(); return false;">
+                                    <h3>필터를 골라주세요</h3>
+                                    <article>
+                                        <strong>숙소 유형</strong>
+                                        <ul>
+                                            <li><label><input type="checkbox" name="chkAccType" value="1">모텔</label></li>
+                                            <li><label><input type="checkbox" name="chkAccType" value="2">호텔</label></li>
+                                            <li><label><input type="checkbox" name="chkAccType" value="3">펜션</label></li>
+                                            <li><label><input type="checkbox" name="chkAccType" value="4">게스트하우스</label></li>
+                                            <li><label><input type="checkbox" name="chkAccType" value="5">캠핑·글램핑</label></li>
+                                        </ul>
+                                    </article>
+                                    <article>
+                                        <strong>편의 시설</strong>
+                                        <table>
+                                            <tr>
+                                                <td><label><input type="checkbox" name="chk" value="1">피트니스</label></td>
+                                                <td><label><input type="checkbox" name="chk" value="2">와이파이</label></td>
+                                                <td><label><input type="checkbox" name="chk" value="3">레스토랑</label></td>
+                                                <td><label><input type="checkbox" name="chk" value="4">TV</label></td>
+                                            </tr>
+                                            <tr>
+                                                <td><label><input type="checkbox" name="chk" value="5">에어컨</label></td>
+                                                <td><label><input type="checkbox" name="chk" value="6">냉장고</label></td>
+                                                <td><label><input type="checkbox" name="chk" value="7">드라이기</label></td>
+                                                <td><label><input type="checkbox" name="chk" value="8">장애인편의시설</label></td>
+                                            </tr>
+                                            <tr>
+                                                <td><label><input type="checkbox" name="chk" value="9">주차장</label></td>
+                                                <td><label><input type="checkbox" name="chk" value="10">무료주차</label></td>
+                                                <td><label><input type="checkbox" name="chk" value="11">금연</label></td>
+                                                <td><label><input type="checkbox" name="chk" value="12">카페</label></td>
+                                            </tr>
+                                            <tr>
+                                                <td><label><input type="checkbox" name="chk" value="13">수영장</label></td>
+                                                <td><label><input type="checkbox" name="chk" value="14">욕조</label></td>
+                                                <td><label><input type="checkbox" name="chk" value="15">스파</label></td>
+                                                <td><label><input type="checkbox" name="chk" value="16">엘리베이터</label></td>
+                                            </tr>
+                                            <tr>
+                                                <td><label><input type="checkbox" name="chk" value="17">욕실용품</label></td>
+                                                <td><label><input type="checkbox" name="chk" value="18">사우나</label></td>
+                                                <td><label><input type="checkbox" name="chk" value="19">짐보관</label></td>
+                                                <td><label><input type="checkbox" name="chk" value="20">세탁기</label></td>
+                                            </tr>
+                                            <tr>
+                                                <td><label><input type="checkbox" name="chk" value="21">건조기</label></td>
+                                            </tr>
+                                        </table>
+                                    </article>
+                                    <article>
+                                        <strong>가격</strong>
+                                        <div class="priceSlide">
+                                            <input type="text" class="js-range-slider" name="my_range" value="" />
+                                        </div>
+                                    </article>
+                                    <article>
+                                        <input type="submit" name="search" value="적용" onclick="return false">
+                                    </article>
+                                </form>
+                            </div>
+                        </div>
+                        <form>
+                            <table>
+                                <tr>
+                                    <th>체크인 / 체크아웃</th>
+                                    <th>인원수</th>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <input type="text" name="daterange" id="daterange" th:attr="data-status=0">
+                                    </td>
+                                    <td>
+                                        <input type="number" min="1" name="numPeople">
+                                    </td>
+                                </tr>
+                            </table>
+                            <input type="submit" name="result" value="필터결과" class="result">
+                        </form>
+                    </div>
+                    <div class="content">
+                        <div class="list">
+                            <div class="list-area">
+                                <div th:if="${accs.size() == 0}" class="noResult">
+                                    해당하는 조건의 숙박시설이 존재하지 않습니다.<br>
+                                </div>
+                                <ul>
+                                    <li th:each="acc : ${accs}">
+                                        <span class="badge">[[${acc.accType_type}]]</span>
+                                        <img th:src="|@{/}img/product/${acc.province_no}/${acc.acc_id}/${#strings.substringBefore(acc.acc_thumbs, '/')}|" alt="상품 이미지">
+                                        <article class="stage">
+                                            <a th:href="@{/product/view(acc_id=${acc.acc_id},checkIn=${checkIn},checkOut=${checkOut})}" class="acc_rink" th:data-acc_id="${acc.acc_id}">
+                                                <div class="stage-name">
+                                                    <strong>[[${acc.acc_name}]]</strong>
+                                                    <p>
+                                                        <span>[[${#numbers.formatDecimal(acc.acc_rate,1,1)}]]</span>
+                                                        <b th:if="${acc.acc_rate >= 5}">최고에요</b>
+                                                        <b th:if="${acc.acc_rate >= 4 && acc.acc_rate < 5 }">추천해요</b>
+                                                        <b th:if="${acc.acc_rate >= 3 && acc.acc_rate < 4 }">좋아요</b>
+                                                        <b th:if="${acc.acc_rate < 3 }">괜찮아요</b>
+                                                        <em>([[${acc.acc_review}]])</em>
+                                                    </p>
+                                                    <p>
+                                                        <span>[[${acc.acc_addr}]]</span>
+                                                        <span th:if="${acc.acc_addrDetail} != None">[[${acc.acc_addrDetail}]]</span>
+                                                    </p>
+                                                </div>
+                                                <div class="stage-descript">
+                                                    <span th:if="${acc.acc_mainInfo != 'None'}" th:each="info : ${#strings.listSplit(acc.acc_mainInfo, '/')}">
+                                                        [[${info}]]<br>
+                                                    </span>
+                                                </div>
+                                                <div class="stage-info">
+                                                    <p>
+                                                        <span th:if="${acc.empty_room_stock lt 3 and acc.empty_room_stock gt 0}">
+                                                            남은 객실 : [[${acc.empty_room_stock}]]
+                                                        </span>
+                                                    </p>
+                                                    <p th:if="${acc.empty_room_stock le 0}">
+                                                        <b style="color:#9c9c9c; font-weight:700;">예약 마감 다른 날짜 확인</b>
+                                                    </p>
+                                                    <p th:unless="${acc.empty_room_stock le 0}" class="price">
+                                                        <b>[[${#numbers.formatInteger(acc.avg_price,1,'COMMA')}]]</b>원/1박
+                                                    </p>
+                                                </div>
+                                            </a>
+                                        </article>
+                                    </li>
+                                </ul>
+                                <!-- 페이징 -->
+                                <div class="paging" th:object="${ph}" th:unless="${accs.size() == 0}">
+                                    <span th:if="*{showPrev}" class="prev">
+                                        <a th:href="@{/product/list} + ${ph.sc.getQueryString(ph.beginPage-1)}">
+                                            <!--<img th:src="@{/images/product/left.png}" alt="previous">-->
+                                        </a>
+                                    </span>
+                                    <span th:each="num:${#numbers.sequence(ph.beginPage, ph.endPage)}" th:class="${num == ph.sc.page} ? 'on':'off'">
+                                        <a th:href="@{/product/list} + ${ph.sc.getQueryString(num)}"> [[${num}]] </a>
+                                    </span>
+                                    <span th:if="*{showNext}" class="next">
+                                        <a th:href="@{/product/list} + ${ph.sc.getQueryString(ph.endPage+1)}">
+                                            <!--<img th:src="@{/images/product/right.png}" alt="next">-->
+                                        </a>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="listMap">
+                            <p>
+                                <button onclick="setZoomable(false)">지도 확대/축소 끄기</button>
+                                <button onclick="setZoomable(true)">지도 확대/축소 켜기</button>
+                                <button name="research">지도 반경으로 재검색</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </th:block>
+        <th:block layout:fragment="script">
+            <script th:inline="javascript">
+                let clat = [[${ph.sc.lat}]];
+                let clng = [[${ph.sc.lng}]];
+                let accs = [[${accs}]];
+                let level = [[${ph.sc.level}]];
+                let maxPrice = [[${ph.sc.maxPrice}]];
+                let minPrice = [[${ph.sc.minPrice}]];
+                if(maxPrice == 0) {maxPrice = 600000};
+
+
+                /**
+                 * @since 2023/04/09
+                 * @author 서정현
+                 * @apinote 숙소 클릭시 mongodb에 방문자 로그를 저장하기위한 이벤트
+                 */
+                $('.acc_rink').click(function (e){
+                    e.preventDefault();
+
+                    const jsonData = {
+                        "acc_id":$(this).data("acc_id")
+                    }
+
+                    ajaxAPI("product/visitor-log", jsonData, "POST").then((response) => {
+                        location.href = $(this).attr("href");
+                    }).catch((errorMsg) => {
+                        location.href = $(this).attr("href");
+                        console.log(errorMsg)
+                    });
+                })
+
+            </script>
+            <script th:src="@{/js/product/productList.js}"></script>
+        </th:block>
+</html>

@@ -1,0 +1,93 @@
+<!--
+    날짜 : 2023/02/25
+    이름 : 황원진
+    내용 : 마이페이지 reserveration HTML 
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="layouts/default-layout">
+<th:block layout:fragment="css-js">
+    <link rel="stylesheet" th:href="@{/css/my/my.css}">
+
+</th:block>
+<th:block layout:fragment="content">
+            
+            <main>
+            <section id="my">
+                <th:block th:replace="~{fragments/_aside::myAside}"></th:block>
+                <div class="content">
+                    <!-- 카테고리 -->
+                    <div class="tab">
+                        <span class="my_title">
+                            예약 내역
+                        </span>
+                    </div>
+                    <div class="reserve_history" th:if="${reservations.size() == 0}">
+                        <p>예약내역이 없습니다.</p>
+                    </div>
+                    <div class="reserve_history" th:if="${reservations.size() != 0}">
+                        <div class="reserve_info" th:each="reserv:${reservations}">
+                            <div class="reserve_img">
+                                <a th:href="@{/product/view ( acc_id=${reserv.acc_id} )}" class="thumb">
+                                    <img th:src="|@{/}img/product/${reserv.province_no}/${reserv.acc_id}/${#strings.substringBefore(reserv.acc_thumbs, '/')}|" alt="장소 이미지">
+                                </a>
+                            </div>
+                            <div class="info_text_box">
+                                <div class="info_day">
+                                    <span class="reserve_day">[[${reserv.res_date}]]</span>
+                                </div>
+                                <div class="info_more">
+                                    <a th:href="@{/my/reservation/view ( res_no=${reserv.res_no} )}" class="reserve_more"> 상세보기 ></a>
+                                </div>
+                                <div class="info_num">
+                                    <span class="reserve_num">
+                                        예약 번호 : 
+                                        <i>[[${reserv.res_no}]]</i>
+                                    </span>
+                                </div>
+                                <div class="info_state">
+                                    <span class="reserve_state">
+                                        예약 상태 :
+                                        <i th:if="${reserv.res_state == 0}">예약 취소 </i>
+                                        <i th:if="${reserv.res_state == 1}">예약 완료 </i>
+                                        <i th:if="${reserv.res_state == 2}">숙박 완료 </i>
+                                    </span>
+                                </div>
+                                <div class="info_days">
+                                    <span class="reserve_days">[[${reserv.res_checkIn}]] ~ [[${reserv.res_checkOut}]] | [[${reserv.night}]]박</span>
+                                </div>
+                                <div class="info_check">
+                                    <span class="reserve_check">체크인 [[${reserv.room_checkIn.substring(0,5)}]] | 체크아웃 [[${reserv.room_checkOut.substring(0,5)}]]</span>
+                                </div>
+                                <th:block th:if="${reserv.res_state == 2}">
+                                    <a th:href="@{/my/diary/write ( res_no=${reserv.res_no} )}" class="myDiary" th:if="${reserv.diaryStat == 0}">여행일기작성</a>
+                                    <a th:href="@{/diary/view ( arti_no=${reserv.diaryStat}, res_no=${reserv.res_no} )}" class="myDiary on" th:if="${reserv.diaryStat != 0}">여행일기보기</a>
+                                    <a th:href="@{/my/review/write ( res_no=${reserv.res_no}, acc_id=${reserv.acc_id} )}" class="my_review_write" th:if="${reserv.reviewStat == 0}">리뷰작성</a>
+                                    <a th:href="@{/my/review/view ( res_no=${reserv.res_no} )}" class="my_review_write on" th:if="${reserv.reviewStat != 0}">리뷰보기</a>
+                                </th:block>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 페이징 -->
+                    <div class="paging" th:object="${ph}" th:unless="${reservations.size() == 0}">
+                        <span class="prev" th:if="*{showPrev}">
+                            <a th:href="@{/my/reservation/list} + ${ph.sc.getQueryString(ph.beginPage-1)}"></a>
+                        </span>
+                        <span th:each="num:${#numbers.sequence(ph.beginPage, ph.endPage)}" th:class="${num == ph.sc.page} ? 'on':'off'">
+                            <a th:href="@{/my/reservation/list} + ${ph.sc.getQueryString(num)}"> [[${num}]] </a>
+                        </span>
+                        <span class="next" th:if="*{showNext}">
+                            <a th:href="@{/my/reservation/list} + ${ph.sc.getQueryString(ph.endPage+1)}"></a>
+                        </span>
+                    </div>
+                </div>  
+            </section>
+        </main>
+    </th:block>
+    <th:block layout:fragment="script">
+        <script>
+
+        </script>
+    </th:block>
+</html>

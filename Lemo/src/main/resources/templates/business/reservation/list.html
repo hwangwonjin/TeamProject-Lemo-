@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/admin-layout}">
+<th:block layout:fragment="css-js">
+    <link rel="stylesheet" th:href="@{/css/admin/adminSubStyle.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/adminCommon.css}">
+    <script th:src="@{/js/common/jquery.highlight-5.js}"></script>
+</th:block>
+<th:block layout:fragment="content">
+    <main>
+        <div class="main_inner">
+            <!-- 죄측 사이드바 -->
+            <th:block th:replace="~{fragments/_aside::businessFragment}"></th:block>
+            <!-- 우측 메인 컨테이너 -->
+            <section class="main_content">
+                <div class="main_cotent_inner">
+                    <div class="main_content_div">
+                        <div class="col_nav">
+                            <span>예약관리 ></span>
+                            <span>예약정보</span>
+                        </div>
+                        <div class="col2">
+                            <form th:action="@{/business/reservation/list}">
+                                <span class="search_review_tit">예약검색</span>
+                                <table class="search_review_table">
+                                    <tr>
+                                        <th>숙소 선택</th>
+                                        <td>
+                                            <select id="c_role_type" class="selectAccOwned" name="acc_id">
+                                                <option value="">- 전체 -</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <div class="search_btn">
+                                    <button type="submit" class="btnAdminProd3">검색</button>
+                                </div>
+                                <span class="totalCount">예약 총 개수 ([[${totalReservations}]])</span>
+                                <div class="board_list">
+                                    <ul>
+                                        <li class="res_li1">#</li>
+                                        <li class="res_li2">예약번호</li>
+                                        <li class="res_li3">객실번호</li>
+                                        <li class="res_li4">객실명</li>
+                                        <li class="res_li5">예약자명</li>
+                                        <li class="res_li6">예약상태</li>
+                                        <li class="res_li7">예약기간</li>
+                                        <li class="res_li8">비고</li>
+                                    </ul>
+                                    <th:block th:if="${#lists.size(reservations) != 0}">
+                                        <ul th:each="res,i:${reservations}">
+                                            <li class="res_li1">[[${ph.totalCnt - ph.sc.offset - i.index}]]</li>
+                                            <li class="res_li2" th:text="${res.res_no}">#</li>
+                                            <li class="res_li3" th:text="${res.room_id}">#</li>
+                                            <li class="res_li4" th:text="${res.room_name}">#</li>
+                                            <li class="res_li5" th:text="${res.res_name}">#</li>
+                                            <li
+                                                th:class="${res.res_state == 0 ? 'cancel_res' : (res.res_state == 1 ? 'complete_res' : 'complete_acc')}"
+                                                th:text="${res.res_state == 0 ? '예약취소' : (res.res_state == 1 ? '예약완료' : '숙박완료')}">
+                                            </li>
+                                            <li class="res_li7">[[${res.res_checkIn}]] ~ [[${res.res_checkOut}]]</li>
+                                            <li class="res_li8">
+                                                <!-- 상세정보 팝업 -->
+                                                <button id="btnDetail" class="btnDetail" th:value="${res.res_no}">상세정보</button>
+                                                <dialog id="d_Detail" class="d_Detail">
+                                                    <form method="dialog">
+                                                        <section class="detail_sec">
+                                                            <nav class="d_tit">
+                                                                <h1 class="d_tit2">예약상세정보</h1>
+                                                                <input type="hidden" class="res_no">
+                                                                <button value="close" type="reset" id="btnCloseModal" class="btnRclose">X</button>
+                                                            </nav>
+                                                            <nav class="d_sub_tit">
+                                                                <div class="d_b1">
+                                                                    <span>예약번호:
+                                                                        <i th:text="${res.res_no}">2303011856123456</i>
+                                                                    </span>
+                                                                    <span>&nbsp;&nbsp;예약일자:
+                                                                        <i th:text="${res.res_date}">23.03.01</i>
+                                                                    </span>
+                                                                </div>
+                                                            </nav>
+                                                            <div class="d_box">
+
+                                                                <div class="d_b2">
+                                                                    숙소정보
+                                                                </div>
+                                                                <div class="d_b3">
+                                                                    <div class="d_b3_1">
+                                                                        <div class="d_b3_2">
+                                                                            <div class="d_b_name">
+                                                                                <div>숙소정보</div>
+                                                                                <div>[[${res.acc_name}]] [[${res.room_name}]]</div>
+                                                                            </div>
+                                                                            <div class="d_b_name">
+                                                                                <div>체크인</div>
+                                                                                <div>[[${res.res_checkIn}]]
+                                                                                    <th:block th:text="${res.room_checkIn != null ? res.room_checkIn : res.acc_checkIn}"></th:block>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="d_b_name">
+                                                                                <div>체크아웃</div>
+                                                                                <div>[[${res.res_checkOut}]]
+                                                                                    <th:block th:text="${res.room_checkOut != null ? res.room_checkOut : res.acc_checkOut}"></th:block>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="d_b2">
+                                                                    예약자정보
+                                                                </div>
+                                                                <div class="d_b3">
+                                                                    <div class="d_b3_1">
+                                                                        <div class="d_b3_2">
+                                                                            <div class="d_b_name">
+                                                                                <div>예약자명</div>
+                                                                                <div>[[${res.res_name}]]</div>
+                                                                            </div>
+                                                                            <div class="d_b_name">
+                                                                                <div>휴대폰번호</div>
+                                                                                <div th:text="${#strings.substring(res.res_hp,0,3) + '-' + #strings.substring(res.res_hp,3,7) + '-' + #strings.substring(res.res_hp,7)}"></div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="d_b2">
+                                                                    결제정보
+                                                                </div>
+                                                                <div class="d_b3">
+                                                                    <div class="d_b3_1">
+                                                                        <div class="d_b3_2">
+                                                                            <div class="d_b_name">
+                                                                                <div>결제방법</div>
+                                                                                <th:block th:if="${res.res_payment == 1}">
+                                                                                    <div>신용·체크카드</div>
+                                                                                </th:block>
+                                                                                <th:block th:if="${res.res_payment == 2}">
+                                                                                    <div>간편 계좌이체</div>
+                                                                                </th:block>
+                                                                                <th:block th:if="${res.res_payment == 3}">
+                                                                                    <div>휴대폰결제</div>
+                                                                                </th:block>
+                                                                                <th:block th:if="${res.res_payment == 4}">
+                                                                                    <div>네이버페이</div>
+                                                                                </th:block>
+                                                                                <th:block th:if="${res.res_payment == 5}">
+                                                                                    <div>카카오페이</div>
+                                                                                </th:block>
+                                                                            </div>
+                                                                            <div class="d_b_name">
+                                                                                <div>결제금액</div>
+                                                                                <div th:text="${#numbers.formatInteger(res.res_price, 0, 'COMMA') + '원'}"></div>
+                                                                            </div>
+                                                                            <div class="d_b_name">
+                                                                                <div>할인금액</div>
+                                                                                <div th:text="${#numbers.formatInteger(res.res_disPrice, 0, 'COMMA') + '원'}"></div>
+                                                                            </div>
+                                                                            <div class="d_b_name2">
+                                                                                <div>최종결제금액 <i>(VAT포함)</i></div>
+                                                                                <div th:text="${#numbers.formatInteger(res.res_price - res.res_disPrice, 0, 'COMMA') + '원'}"></div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </section>
+                                                    </form>
+                                                </dialog>
+                                                <!-- 메모 팝업 -->
+                                                <button id="btnMemo" class="btnMemo" th:value="${res.res_no}">메모</button>
+                                                <dialog id="d_Memo">
+                                                    <form action="dialog">
+                                                        <section>
+                                                            <nav class="d_tit">
+                                                                <h1 class="d_tit2">메모</h1>
+                                                                <input type="hidden" class="res_no">
+                                                            </nav>
+                                                            <div class="d_box">
+                                                                <textarea placeholder="메모 내용을 작성하세요" th:text="${res.res_memo}"></textarea>
+                                                            </div>
+                                                            <div class="rr_btn">
+                                                                <button class="btnRclose" id="btnCloseModal2" value="close" type="reset">닫기</button>
+                                                                <button class="btnRsubmit" id="btnCloseModal3">작성</button>
+                                                            </div>
+                                                        </section>
+                                                    </form>
+                                                </dialog>
+                                            </li>
+                                        </ul>
+                                    </th:block>
+                                    <th:block th:if="${#lists.size(reservations) == 0}">
+                                        <div class="noResult">해당 예약내역이 없습니다.</div>
+                                    </th:block>
+                                </div>
+                                <div class="pagination" th:object="${ph}" th:style="${#lists.size(reservations) == 0 ? 'visibility:hidden;':''}">
+                                    <th:block th:if="*{showPrev}">
+                                        <a th:href="@{/business/reservation/list} + ${ph.sc.getQueryString(ph.beginPage-1)}" class="prev">< </a>
+                                    </th:block>
+                                    <th:block th:each="num:${#numbers.sequence(ph.beginPage, ph.endPage)}">
+                                        <a th:href="@{/business/reservation/list} + ${ph.sc.getQueryString(num)}" th:class="${num == ph.sc.page ? 'num current':'num'}">
+                                            [[${num}]]
+                                        </a>
+                                    </th:block>
+                                    <th:block th:if="*{showNext}">
+                                        <a th:href="@{/business/reservation/list} + ${ph.sc.getQueryString(ph.endPage+1)}" class="next"> ></a>
+                                    </th:block>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="blank30"></div>
+                </div>
+            </section>
+        </div>
+    </main>
+    <th:block th:replace="~{fragments/_footer::footerFragment}"></th:block>
+</th:block>
+<th:block layout:fragment="script">
+    <script>
+        $(document).ready(function(){
+            // 상세정보 팝업
+            var detail_sec = $('.detail_sec');
+
+            $(document).on('click', '.btnDetail', function(e){
+                e.preventDefault();
+                const dialog = $(this).next()[0];
+                $(this).next().show();
+
+                let res_no = $(this).val();
+                console.log('res_no: '+ res_no );
+
+                $(this).next().find('.res_no').attr('value', res_no);
+
+            });
+
+            // 상세정보 팝업 닫기
+            $(document).on('click', '.btnRclose', function(e) {
+                e.preventDefault();
+                console.log("click the close button");
+                $(this).closest('li').find('#d_Detail').hide();
+            });
+
+
+
+            // 메모 팝업
+            $(document).on('click', '.btnMemo', function(e){
+                e.preventDefault();
+                $(this).next().show();
+
+                let res_no = $(this).val();
+                console.log('res_no: '+ res_no );
+
+                $(this).next().find('.res_no').attr('value', res_no);
+
+            });
+
+            // 메모 팝업 닫기
+            $(document).on('click', '.btnRclose', function(e) {
+                e.preventDefault();
+                console.log("click the close button");
+                $(this).closest('li').find('#d_Memo').hide();
+            });
+
+            // input 엔터키 submit 막기
+            $('.btnRsubmit').keydown(function() {
+                if (event.keyCode === 13) {
+                    event.preventDefault();
+                };
+            });
+
+            // 메모 작성
+            $(document).on('click', '.btnRsubmit', function(e) {
+                e.preventDefault();
+
+                let res_no = $(this).parent().prev().prev().find('.res_no').val();
+                let res_memo = $(this).parent().prev().children().val();
+                console.log('res_no: ' + res_no);
+                console.log('res_memo: ' + res_memo);
+
+                const jsonData = {
+                    "res_no": res_no,
+                    "res_memo": res_memo
+                };
+
+                ajaxAPI("business/reservation/memo", jsonData, "POST").then((response) => {
+                    if (response.result > 0) {
+                      sweetalert("메모 작성이 완료되었습니다.", "success");
+                      $(this).closest('li').find('#d_Memo').hide();
+                    } else {
+                      alert('error');
+                    }
+                }).catch((errorMsg) => {
+                    console.log(errorMsg);
+                });
+            });
+
+
+
+
+
+        });
+
+
+
+    // 쿠폰 목록 (판매자) 소유 숙소 셀렉트 옵션 추가
+    window.onload = function() {
+        let selectAccOwned = document.getElementById("c_role_type");
+
+        ajaxAPI("business/find-acc", null, "GET").then((response)=>{
+
+            console.log('response1 : %o', response);
+
+            for (let i = 0; i < response.length; i++) {
+                let option = document.createElement("option");
+                option.value = response[i].acc_id;
+                option.text = response[i].acc_name;
+
+
+                // 옵션값 고정
+                if (localStorage.getItem('selectedAccId') == response[i].acc_id) {
+                    option.setAttribute('selected', 'selected');
+                }
+
+                selectAccOwned.add(option);
+            }
+
+            // 옵션 변경 시에도 옵션 고정
+            selectAccOwned.addEventListener('change', function() {
+                localStorage.setItem('selectedAccId', this.value);
+            });
+        }).catch((errorMsg)=>{
+            console.log(errorMsg);
+        });
+    };
+    </script>
+</th:block>
+</html>

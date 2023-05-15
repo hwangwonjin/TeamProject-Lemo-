@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/admin-layout}">
+<th:block layout:fragment="css-js">
+    <link rel="stylesheet" th:href="@{/css/admin/adminTerm.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/adminCommon.css}">
+    <style>
+    </style>
+</th:block>
+<th:block layout:fragment="content">
+    <main>
+        <div class="main_inner">
+            <!-- 죄측 사이드바 -->
+            <th:block th:replace="~{fragments/_aside::adminFragment}"></th:block>
+            <!-- 우측 메인 컨테이너 -->
+            <section class="main_content">
+                <div class="main_cotent_inner">
+                    <div class="main_content_div">
+                        <div class="col_nav">
+                            <span>고객센터 ></span>
+                            <span>약관 및 정책 목록</span>
+                        </div>
+                        <div class="col2">
+                            <form action="#">
+                                <span class="search_review_tit">약관 및 정책 유형검색</span>
+                                <table class="search_review_table">
+                                    <tr>
+                                        <th>유형 선택</th>
+                                        <td>
+                                            <select id="c_role_type" class="selectAccOwned" name="termsType_no">
+                                                <option value=0>- 전체 -</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <div class="search_btn">
+                                    <button type="submit" class="btnAdminProd3">검색</button>
+                                </div>
+                                <div class="board_list">
+                                    <ul>
+                                        <li>#</li>
+                                        <li>유형</li>
+                                        <li>제목</li>
+                                        <li>비고</li>
+                                    </ul>
+                                    <ul class="show_list" th:if="${terms.size() == 0}">
+                                        <li id="nonData" colspan="6">
+                                            등록된 약관 및 정책이 없습니다.
+                                        </li>
+                                    </ul>
+                                    <th:block th:each="term,i:${terms}">
+                                        <ul>
+                                            <li>[[*{totalCnt-sc.offset} - ${i.index}]]</li>
+                                            <li>[[${term.termsType_type_ko}]]</li>
+                                            <li class="title">
+                                                <a th:href="@{/admin/cs/terms/view (terms_no=${term.terms_no}, page=${ph.sc.page})}">[[${term.terms_title}]]</a>
+                                            </li>
+                                            <li class="prodBtn">
+                                                <a class="btnTermDelete" th:data-no="${term.terms_no}">삭제</a>
+                                                <a th:href="@{/admin/cs/terms/modify (terms_no=${term.terms_no}, page=${ph.sc.page})}" class="btnModify">수정</a>
+                                            </li>
+                                        </ul>
+                                    </th:block>
+                                </div>
+                                <div class="pagination" th:object="${ph}" th:style="${#lists.size(terms) == 0 ? 'visibility:hidden;':''}">
+
+                                    <th:block th:if="*{showPrev}">
+                                        <a th:href="@{/admin/cs/terms/list} + ${ph.sc.getQueryString(ph.beginPage-1)}" class="prev">< </a>
+                                    </th:block>
+
+                                    <th:block th:each="num:${#numbers.sequence(ph.beginPage, ph.endPage)}">
+                                        <a th:href="@{/admin/cs/terms/list} + ${ph.sc.getQueryString(num)}" th:class="${num == ph.sc.page ? 'num current':'num'}">
+                                            [[${num}]]
+                                        </a>
+                                    </th:block>
+
+                                    <th:block th:if="*{showNext}">
+                                        <a th:href="@{/admin/cs/terms/list} + ${ph.sc.getQueryString(ph.endPage+1)}" class="next"> ></a>
+                                    </th:block>
+
+                                </div>
+                                <div class="btnAdminProd">
+                                    <a th:href="@{/admin/cs/terms/write}">
+                                        등록
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="blank30"></div>
+                </div>
+            </section>
+        </div>
+    </main>
+    <th:block th:replace="~{fragments/_footer::footerFragment}"></th:block>
+</th:block>
+<th:block layout:fragment="script">
+    <script>
+        $(document).ready(function() {
+            // notice 삭제
+        $('.btnTermDelete').click(function(e){
+            e.preventDefault();
+                Swal.fire({
+                    title: '해당 약관을 삭제하시겠습니까?',
+                    icon: 'question',
+
+                    showCancelButton: true, // cancel버튼 보이기. 기본은 원래 없음
+                    confirmButtonColor: '#3085d6', // confrim 버튼 색깔 지정
+                    cancelButtonColor: '#d33', // cancel 버튼 색깔 지정
+                    confirmButtonText: '확인', // confirm 버튼 텍스트 지정
+                    cancelButtonText: '취소', // cancel 버튼 텍스트 지정
+
+                    reverseButtons: false,
+                }).then(result => {
+                    if(result.isConfirmed){
+                        let term_no = $(this).attr('data-no');
+
+                        console.log('term_no ajax : ' + term_no);
+
+                        const jsonData = {"term_no": term_no};
+
+                        ajaxAPI("admin/cs/term", jsonData, "delete").then((response) => {
+                            if(response.result > 0) {
+                                Swal.fire({
+                                        title : '글이 삭제되었습니다.',
+                                        icon : 'success',
+                                        confirmButtonText : '확인'
+                                    }).then(function(){
+                                        location.replace("/Lemo/admin/cs/terms/list");
+                                    });
+
+                            }else {
+                                Swal.fire({
+                                        title : '게시글을 삭제하는데 실패하였습니다.',
+                                        icon : 'error',
+                                        confirmButtonText : '확인'
+                                    }).then(function(){
+                                        location.replace("/Lemo/admin/cs/terms/list");
+                                    });
+                            }
+                        }).catch((errMsg) => {
+                            console.log(errMsg);
+                        });
+                    }
+                });
+            });
+        });
+
+
+        // 약관 셀렉트 옵션 추가
+        window.onload = function() {
+
+        let selectAccOwned = document.getElementById("c_role_type");
+        let urlParams = new URLSearchParams(window.location.search);
+        let selectedOptionValue = urlParams.get('termsType_no');
+
+
+        ajaxAPI("admin/cs/terms/find-terms-type", null, "GET").then((response)=>{
+
+            console.log('response1 : %o', response);
+
+            for (let i = 0; i < response.length; i++) {
+                let option = document.createElement("option");
+                option.value = response[i].termsType_no;
+                option.text = response[i].termsType_type_ko;
+
+
+                // 옵션값 고정
+                if (selectedOptionValue == response[i].termsType_no) {
+                    option.setAttribute('selected', 'selected');
+                }
+
+                selectAccOwned.add(option);
+            }
+
+
+            // 옵션 변경 시에도 옵션 고정
+            selectAccOwned.addEventListener('change', function() {
+                selectedOptionValue = this.value; // 변경된 옵션 값 업데이트
+            });
+
+        }).catch((errorMsg)=>{
+            console.log(errorMsg);
+        });
+    };
+    </script>
+</th:block>
+</html>

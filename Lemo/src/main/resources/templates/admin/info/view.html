@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/admin-layout}">
+<th:block layout:fragment="css-js">
+    <link rel="stylesheet" th:href="@{/css/admin/adminSubStyle.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/adminCommon.css}">
+    <!-- 다음 주소 API -->
+    <script th:src="@{/js/common/zipCode.js}"></script>
+    <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+</th:block>
+<th:block layout:fragment="content">
+    <main>
+        <div class="main_inner">
+            <!-- 죄측 사이드바 -->
+            <th:block th:replace="~{fragments/_aside::adminFragment}"></th:block>
+            <!-- 우측 메인 컨테이너 -->
+            <section class="main_content">
+                <div class="main_cotent_inner">
+                    <div class="main_content_div">
+                        <div class="col_nav">
+                            <span>상품관리 ></span>
+                            <span>숙소보기</span>
+                        </div>
+
+                        <!-- 숙소 보기 폼 -->
+                        <div class="col_register_form">
+                            <div class="col_register1">
+                                <div class="stayName">
+                                    <div>
+                                        <span>숙소아이디</span>
+                                    </div>
+                                </div>
+                                <input class="input_stayName" id="result_acc_id" type="text" th:value="${acc.acc_id}" readonly>
+                            </div>
+                            <!-- 숙소명 등록 -->
+                            <div class="col_register1">
+                                <div class="stayName">
+                                    <div>
+                                        <span>숙소명</span>
+                                    </div>
+                                </div>
+                                <input class="input_stayName" type="text" th:value="${acc.acc_name}" readonly>
+                                <!--<span class="result_stayName">
+                                    💡 숙소명은 추후 수정가능합니다
+                                </span>-->
+                            </div>
+                            <div class="col_register1">
+                                <div class="stayName">
+                                    <div>
+                                        <span>숙소타입</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <select name="accType_no" class="accType">
+                                        <option value="1" th:selected="${acc.accType_no} == '1'" th:disabled="disabled">모텔</option>
+                                        <option value="2" th:selected="${acc.accType_no} == '2'" th:disabled="disabled">호텔</option>
+                                        <option value="3" th:selected="${acc.accType_no} == '3'" th:disabled="disabled">펜션</option>
+                                        <option value="4" th:selected="${acc.accType_no} == '4'" th:disabled="disabled">게스트하우스</option>
+                                        <option value="5" th:selected="${acc.accType_no} == '5'" th:disabled="disabled">캠핑·글램핑</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <!-- 주소 -->
+                            <div class="col_register1">
+                                <div class="stayName">
+                                    <div>
+                                        <span>주소</span>
+                                    </div>
+                                </div>
+                                <div class="stayZip">
+                                    <!-- <button type="button">주소찾기</button> -->
+                                    <input type="text" id="zip" th:value="${acc.acc_zip}" readonly>
+                                </div>
+                                <div class="stayAddr1">
+                                    <input type="text" id="addr" th:value="${acc.acc_addr}" readonly>
+                                </div>
+                                <div class="stayAddr2">
+                                    <input type="text" id="addrDetail" th:value="${acc.acc_addrDetail}" readonly>
+                                </div>
+                            </div>
+                            <!-- 편의시설 및 서비스 체크박스 등록 -->
+                            <div class="col_register1">
+                                <div class="stayName">
+                                    <div>
+                                        <span>편의시설 및 서비스</span>
+                                    </div>
+                                </div>
+                                <div class="cs_checkbox">
+                                    <ul id="service_List">
+                                        <li th:each="info:${serviceInfo}">
+                                            <img th:src="@{/images/admin/hashtag.png}">
+                                            [[${info.sc_name}]]
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- 숙소 썸네일 이미지 -->
+                            <div class="col_register1">
+                                <div class="stayName">
+                                    <div>
+                                        <span>숙소 이미지</span>
+                                    </div>
+                                </div>
+                                <div class="stayThumb">
+                                    <div class="st_inner">
+                                        <div class="st_content2">
+                                            <input type="hidden" th:value="${acc.province_no}">
+                                            <input type="hidden" th:value="${acc.acc_id}">
+
+                                             <th:block th:each="img:${#strings.arraySplit(acc.acc_thumbs, '/')}">
+                                                <img th:src="|@{/}img/product/${acc.province_no}/${acc.acc_id}/${img}|"/>
+                                             </th:block>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                             <!-- 메인 정보 입력 -->
+                            <div class="col_register1">
+                                <div class="stayName">
+                                    <div>
+                                        <span>메인 정보</span>
+                                    </div>
+                                </div>
+                                <input class="input_stayMention" type="text" name="acc_mainInfo" th:value="${acc.acc_mainInfo}" readonly>
+                            </div>
+
+                            <!-- 숙소 정보 입력 -->
+                            <div class="col_register1">
+                                <div class="stayName">
+                                    <div>
+                                        <span>숙소 정보</span>
+                                    </div>
+                                </div>
+                                <div class="stayInfoContent">
+                                    <textarea style="height: 300px;" readonly th:utext="${acc.acc_info}"></textarea>
+                                </div>
+                            </div>
+
+                            <!-- 사장님 한마디 -->
+                            <div class="col_register1">
+                                <div class="stayName">
+                                    <div>
+                                        <span>사장님 한마디</span>
+                                    </div>
+                                </div>
+                                <input class="input_stayMention" type="text" th:value="${acc.acc_comment}" readonly>
+                            </div>
+
+                            <!-- 성수기/비성수기 -->
+                            <div class="col_register1">
+                                <div class="stayName">
+                                    <div>
+                                        <span>성수기/비성수기</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <select name="acc_season" class="acc_season">
+                                        <option value="1" th:selected="${acc.acc_season} == '1'" th:disabled="disabled">비성수기</option>
+                                        <option value="2" th:selected="${acc.acc_season} == '2'" th:disabled="disabled">성수기</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- 할인율 적용 -->
+                            <div class="col_register1">
+                                <div class="stayName">
+                                    <div>
+                                        <span>할인율 적용</span>
+                                    </div>
+                                </div>
+                                <div class="salePercent_container">
+                                    <table>
+                                        <tr class="sp_tr1">
+                                            <th>분류</th>
+                                            <th>할인율 (%)</th>
+                                        </tr>
+                                        <tr>
+                                            <td>성수기 주중</td>
+                                            <td>
+                                                <input type="number" id="insertSalePercent" th:value="${acc.rp_peakSeason_weekday}" readonly>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>성수기 주말</td>
+                                            <td>
+                                                <input type="number" id="insertSalePercent" th:value="${acc.rp_peakSeason_weekend}" readonly>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>비성수기 주중</td>
+                                            <td>
+                                                <input type="number" id="insertSalePercent"  th:value="${acc.rp_offSeason_weekday}" readonly>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>비성수기 주말</td>
+                                            <td>
+                                                <input type="number" id="insertSalePercent"  th:value="${acc.rp_offSeason_weekend}" readonly>
+                                            </td>
+                                        </tr>
+                                    </table>
+
+                                </div>
+                                <span class="result_stayName">
+                                    💡 실제 적용되는 할인율입니다
+                                </span>
+                            </div>
+                            <div class="btnAdminProd">
+                                <a href="javascript:history.back();">
+                                    숙소목록
+                                </a>
+                            </div>
+                            <!--<div class="btnAdminProd">
+                                <a href="#">
+                                    숙소수정
+                                </a>
+                            </div>-->
+                        </div>
+                    </div>
+                    <div class="blank30"></div>
+                </div>
+            </section>
+        </div>
+    </main>
+    <th:block th:replace="~{fragments/_footer::footerFragment}"></th:block>
+</th:block>
+<th:block layout:fragment="script">
+    <script>
+
+    </script>
+</th:block>
+</html>

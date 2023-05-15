@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="layouts/default-layout">
+<th:block layout:fragment="css-js">
+    <link rel="stylesheet" th:href="@{/css/cs/cs.css}">
+    <style>
+        .show_list li {
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .show_list li #nonData {
+            overflow: visible;
+            white-space: normal;
+            text-overflow: initial;
+            line-height: normal;
+            word-wrap: break-word;
+            font-size: 19px;
+            width: 100%;
+            padding: 14px 0;
+            text-align: center;
+        }
+    </style>
+</th:block>
+<th:block layout:fragment="content">
+    <!-- 메인 -->
+    <main>
+        <section id="cs">
+            <!-- nav-->
+            <th:block th:replace="fragments/_aside::csAside"></th:block>
+            <!-- 본문 -->
+            <div class="content">
+                <!-- 카테고리 -->
+                <div class="tab">
+                    <span class="qna_title">
+                        1:1 문의
+                    </span>
+                </div>
+                <!-- 1:1문의 카테고리 -->
+                <div class="sub_cate">
+                    <li><a class="on" id="inquiry" onclick="onList();">내 문의 내역</a></li>
+                    <li><a class="off" id="newInquiry" onclick="onWrite();">새 문의 작성</a></li>
+                </div>
+                <!-- 1:1 문의 목록 -->
+                <div class="tab_each" id="qna_list" style="display: block;">
+                    <ul id="qnas" class="show_list open_list">
+                        <li th:if="${qnaArticles.size() == 0}">
+                            <p colspan="6" id="nonData">
+                                문의내역이 없습니다.
+                            </p>
+                        </li>
+                        <th:block th:each="qna:${qnaArticles}">
+                            <li>
+                                <!-- 제목 길이를 substring으로 자르기 -->
+                                <a href="#" id="qna_tab" class="list_n">
+                                    <p>
+                                        <span>[[${qna.cs_type_ko}]]</span>
+                                        [[${qna.cs_title}]]<b class="reply_complete" th:style="${qna.cs_reply == null ? 'display:none' : ''}">답변완료</b><b class="reply_chk" th:style="${qna.cs_reply != null} ? 'display: none' : ''">검토중</b>
+                                        <span><b>작성일</b>[[${qna.cs_rdate}]]</span>
+                                    </p>
+                                </a>
+                                <div class="toggle">
+                                    <div class="qna">
+                                        <span>문의</span>
+                                        <div>
+                                            [[${qna.cs_content}]]<br>
+                                        </div>
+                                        </p>
+                                        <div class="reply" th:style="${qna.cs_reply == null ? 'display:none' : ''}">
+                                            <span>답변</span><b>작성일 [[${qna.cs_reply_date}]]</b>
+                                            <div>
+                                                [[${qna.cs_reply}]]
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </th:block>
+                    </ul>
+                </div>
+
+                <!-- 문의 작성 -->
+                <div id="qna_write" style="display: none;">
+                    <form name="qna-form" id="qna_form" method="post" th:action="@{/cs/qna}" onsubmit="writeCheck(event);">
+                        <div class="alert_top">
+                            <p>LEMO를 이용 중 불편하신 점을 문의주시면 최대한 빠른 시일내에 답변 드리겠습니다.</p>
+                        </div>
+
+                        <section class="info_wrap">
+                            <b>문의유형</b>
+                            <select name="cs_type" id="qna_type" class="select_opt">
+                                <option value="0">문의유형을 선택하세요</option>
+                                <option value="event">이벤트</option>
+                                <option value="payment">예약/결제</option>
+                                <option value="cancel">취소/환불</option>
+                                <option value="use">이용문의</option>
+                                <option value="info">회원정보</option>
+                                <option value="review">리뷰</option>
+                                <option value="other">기타</option>
+                            </select>
+
+
+                            <div class="phone-block">
+                                <b>제목</b>
+                                <p class="qna_wrap"><input type="text" name="cs_title" placeholder="제목을 입력해주세요"></p>
+                            </div>
+
+                            <div class="phone-block">
+                                <b>휴대폰 번호</b>
+                                <p class="qna_wrap"><input type="tel" maxlength="13" name="cs_hp" placeholder="선택사항입니다."></p>
+                            </div>
+
+                            <div class="email-block">
+                                <b>이메일</b>
+                                <p class="qna_wrap"><input type="email" name="cs_email" placeholder="선택사항입니다."></p>
+                            </div>
+
+                        </section>
+
+                        <section class="text_wrap">
+                            <b>문의내용</b>
+                            <div>
+                                <textarea name="cs_content" id="questionTextarea" placeholder="문의하실 내용을 10자이상 입력해주세요."></textarea>
+                            </div>
+                        </section>
+
+                        <section class="btn_wrap ">
+                            <button class="btn" type="submit">작성 완료</button>
+                        </section>
+                    </form>
+                </div>
+                <!-- 문의 작성 끝 -->
+
+                <!-- 페이징 없음 -->
+            </div>
+        </section>
+    </main>
+</th:block>
+
+<th:block layout:fragment="script">
+    <script th:src="@{/js/cs/toggle.js}"></script>
+    <script>
+
+            function onList(){
+                 $('#qna_write').hide();
+                 $('#qna_list').show();
+                 document.getElementById('inquiry').className = 'on';
+                 document.getElementById('newInquiry').className = 'off';
+               }
+
+            function onWrite(){
+                $('#qna_list').hide();
+                $('#qna_write').show();
+                document.getElementById('newInquiry').className = 'on';
+                document.getElementById('inquiry').className = 'off';
+            }
+
+        $(document).ready(function(){
+            let cs_type = $('.info_wrap').find("select[name=cs_type]").val();
+            let cs_title = document.querySelector('input[name="cs_title"]');
+            let cs_content = document.querySelector('textarea[name="cs_content"]');
+            console.log(cs_type);
+
+              $('#qna_form').submit(function(e){
+                    // 내용 유효성 검사
+                    if( cs_content.value.trim() == ''){
+                        Swal.fire({
+                            title : '내용을 입력해 주세요',
+                            icon : 'error',
+                            confirmButtonText : '확인'
+                        })
+                        e.preventDefault();
+                    }
+
+                    // 제목 유효성 검사
+                    if( cs_title.value.trim() == ''){
+                        Swal.fire({
+                             title : '제목을 입력해 주세요',
+                             icon : 'error',
+                             confirmButtonText : '확인'
+                         })
+                        e.preventDefault();
+                    }
+
+                    // 유형 유효성 검사
+                    if(cs_type == '0'){
+                       Swal.fire({
+                           title : '유형을 선택해주세요.',
+                           icon : 'warning',
+                           confirmButtonText : '확인'
+                       })
+                        e.preventDefault();
+                        }
+                    });
+
+              $('select[name=cs_type]').change(function(){
+                    console.log("select 값 확인" +$(this).val());
+                    cs_type = $(this).val();
+                    $('#qna_form').submit(function(e){
+
+                    if( cs_type == '0'){
+                        Swal.fire({
+                           title : '유형을 선택해주세요.',
+                           icon : 'warning',
+                           confirmButtonText : '확인'
+                        })
+                            e.preventDefault();
+                        }
+                    });
+              });
+        });
+
+        // 작성완료 클릭시 확인
+        function writeCheck(e) {
+          e.preventDefault(); // form submit 막음
+          console.log("1");
+          Swal.fire({
+            title: '정말 등록하시겠습니까?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: '확인',
+            cancelButtonText: '취소',
+            reverseButtons: false,
+          }).then((result) => {
+            if (result.isConfirmed) {
+              e.target.submit(); // form submit 실행
+            }
+          });
+        }
+
+    </script>
+</th:block>
+</html>
+
+
+
+
+
+

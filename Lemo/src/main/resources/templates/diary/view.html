@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="layouts/default-layout">
+<th:block layout:fragment="css-js">
+    <!-- 스타일 -->
+    <link rel="stylesheet" th:href="@{/css/diary/diary.css}">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+</th:block>
+<th:block layout:fragment="content">
+    <main id="diary">
+        <div id="result">
+            <div class="content">
+                <!-- 여행일기 보기 -->
+                <div class="view">
+                    <div class="list-area">
+                        <div id="diary_content">
+                            <span>[[${article.get(0).getArti_title}]]</span>
+                            <ul>
+                                <li>[[${article.get(0).getArti_start}]] ~ [[${article.get(0).getArti_end}]]</li>
+                                <li>[[${article.get(0).getAcc_name}]]</li>
+                                <li>[[${article.get(0).getNick}]]&nbsp;&nbsp;[[${article.get(0).getArti_rdate.substring(0,10)}]]</li>
+                                <li>[[${article.get(0).getArti_like}]]</li>
+                            </ul>
+                        </div>
+                        <!-- 여행장소 -->
+                        <div class="place" th:each="spot:${article}">
+                            <div class="spot">
+                                <span>[[${spot.spot_title}]]</span>
+                            </div>
+                            <img th:src="@{/images/cs/arr_down.png}" class="arrow">
+                            <div class="toggle">
+                                <div class="image">
+                                    <img th:src="@{/img/diary/__${spot.arti_no}__/__${spot.spot_thumb}__}">
+                                </div>
+                                <textarea class="text" readonly>[[${spot.spot_content}]]</textarea>
+                            </div>
+                        </div>
+                        <!-- 여행일기 댓글 -->
+                        <div class="reply">
+                            <div id="tit">
+                                <span>댓글</span><b>[[${total}]]</b>개
+                            </div>
+                            <div id="rep">
+                                <ul th:if="${map.size == 0}">
+                                    <li class="commentEmpty">
+                                        등록된 댓글이 없습니다.
+                                    </li>
+                                </ul>
+                                <ul th:if="${map.size != 0}">
+                                    <!--댓글-->
+                                    <th:block th:each="com:${map}">
+                                        <th:block th:each="comment, i:${map.get(com.key)}">
+                                            <li th:classappend="${comment.com_no != comment.com_pno} ? 're_reply com__${comment.com_pno}__' : 'oriCom__${comment.com_no}__'" th:data-no="${comment.com_no}" th:data-pno="${com.key}">
+                                                <th:block th:if="${comment.com_state == 0}">
+                                                    <div class="removeCom">
+                                                        <p>
+                                                            삭제된 댓글입니다.
+                                                        </p>
+                                                        <div>
+                                                            <a href="#" class="showall" th:if="${comment.com_no == comment.com_pno}">댓글 모두보기</a>
+                                                        </div>
+                                                    </div>
+                                                </th:block>
+                                                <th:block th:if="${comment.com_state == 1}">
+                                                <div class="repdiv1">
+                                                    <img th:if="${comment.photo == null}" th:src="@{/images/my/profile.png}" alt="프사">
+                                                    <img th:if="${comment.photo != null}" th:src="@{/img/profile/__${comment.photo}__}" alt="프사">
+                                                    <div>
+                                                        <strong>[[${comment.nick}]]</strong>
+                                                        <span class="articleWriter" th:if="${article.get(0).getNick == comment.nick}">작성자</span>
+                                                        <span style="margin-left: 5px;">[[${comment.before24H}]]</span>
+                                                        <span class="comModified" th:if="${comment.com_rdate != comment.com_udate}">&nbsp;수정됨&nbsp;</span>
+                                                    </div>
+                                                </div>
+                                                <div class="repdiv2">
+                                                    <th:block th:if="${comment.com_no != comment.com_pno}">
+                                                        <p class="reply_id">@[[${comment.com_replyId}]]</p>
+                                                    </th:block>
+                                                    <textarea readonly class="comTextarea" onkeydown="resizeHeight(this)" onkeyup="resizeHeight(this)">[[${comment.com_comment}]]</textarea>
+                                                </div>
+                                                <div class="repdiv3">
+                                                    <div>
+                                                        <a href="#" class="showall" th:if="${comment.com_no == comment.com_pno}">댓글 모두보기</a>
+                                                        <a href="#" class="comment" sec:authorize="isAuthenticated()" th:if="${#authentication.principal.nick != null}">댓글 쓰기</a>
+                                                    </div>
+                                                    <div>
+                                                        <a href="#" class="comModify" sec:authorize="isAuthenticated()" th:if="${#authentication.principal.nick == comment.nick}">수정</a>
+                                                        <a href="#" class="comDelete" sec:authorize="isAuthenticated()" th:if="${#authentication.principal.nick == comment.nick}">삭제</a>
+                                                    </div>
+                                                </div>
+                                                </th:block>
+                                            </li>
+                                        </th:block>
+                                    </th:block>
+                                </ul>
+                            </div>
+                        </div>
+                        <!-- 댓글 쓰기 -->
+                        <div class="write_reply" sec:authorize="isAuthenticated()" th:if="${#authentication.principal.user_id != null}">
+                            <form action="#" class="comOriWrite">
+                                <textarea class="comTextarea" onkeydown="resizeHeight(this)" onkeyup="resizeHeight(this)" placeholder="댓글을 입력해주세요."></textarea>
+                                <button>댓글 쓰기</button>
+                            </form>
+                        </div>
+                    </div>
+                    <a class="diaryDelete" sec:authorize="isAuthenticated()" th:if="${#authentication.principal.nick == article.get(0).getNick}">삭제</a>
+                    <a th:href="@{/my/diary/modify (arti_no = ${article.get(0).getArti_no}, res_no = ${article.get(0).getRes_no})}" class="diaryModify" sec:authorize="isAuthenticated()" th:if="${#authentication.principal.nick == article.get(0).getNick}">수정</a>
+                    <a th:href="@{/diary/list}" class="diaryList">목록</a>
+                </div>
+                <!-- 지도 -->
+                <div id="listMap">
+                    <p>
+                        <button onclick="setZoomable(false)">지도 확대/축소 끄기</button>
+                        <button onclick="setZoomable(true)">지도 확대/축소 켜기</button>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+</th:block>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        let positionMap = [[${article}]];
+        let arti_no     = [[${arti_no}]];
+        let total       = [[${total}]];
+        let articleNick = [[${article.get(0).getNick}]];
+        let accommoLng = [[${accommo.acc_longtitude}]];
+        let accommoLat = [[${accommo.acc_lattitude}]];
+
+        const comTextarea     = document.querySelectorAll('.comTextarea');
+
+        comTextarea.forEach(function(textarea){
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 15 +'px';
+        });
+
+        function resizeHeight(object) {
+            object.style.height = 'auto';
+            object.style.height = (15 + object.scrollHeight) + 'px';
+        }
+    </script>
+    <script th:src="@{/js/diary/view.js}"></script>
+</th:block>
+</html>
+

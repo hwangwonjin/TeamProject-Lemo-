@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="layouts/user-layout">
+<th:block layout:fragment="css-js">
+    <link rel="stylesheet" th:href="@{/css/user/user.css}">
+</th:block>
+<th:block layout:fragment="content">
+
+    <main id="signup_gen">
+        <section>
+            <form th:action="@{/user/signup}" method="post" class="joinForm">
+                <input type="hidden" name="userType" th:value="${type}">
+                <div class="title">
+                    <strong class="logo">
+                        <img th:src="@{/images/index/lemo_logo-removebg-preview.png}" alt="">
+                        <a th:href="@{/}">LEMO</a>
+                    </strong>
+                </div>
+                <div class="common signup">
+                    <strong class="sub_title">회원가입</strong>
+
+                    <b>이메일 아이디</b>
+                    <div class="inp_type2 form-errors">
+                        <input type="email" name="user_id" placeholder="이메일 주소를 입력해주세요." required>
+                        <label id="email_msg" class="validate_msg"></label>
+                        <button type="button" class="btn_common email">중복확인</button>
+                    </div>
+
+                    <b>비밀번호</b>
+                    <div class="inp_type2 form-errors">
+                        <input type="password" name="pass" placeholder="비밀번호를 입력해주세요." required autocomplete="off">
+                        <label id="pass1_msg" class="validate_msg"></label>
+
+                    </div>
+
+                    <b>비밀번호 확인</b>
+                    <div class="inp_type2 form-errors">
+                        <input type="password" name="pass2" placeholder="비밀번호를 입력해주세요." required autocomplete="off">
+                        <label id="pass2_msg" class="validate_msg"></label>
+                    </div>
+
+                    <b>닉네임</b>
+                    <div class="inp_type2 form-errors">
+                        <input type="text" name="nick"  placeholder="닉네임을 입력해주세요." maxlength="8" required>
+                        <label id="nick_msg" class="validate_msg"></label>
+                        <button type="button" class="btn_common nick active">딴거할래요</button>
+                    </div>
+                    <!-- 유효성 검사 통과 시 class에 on 추가 -->
+                    <button type="submit" class="btn_link" id="signup_btn" disabled>
+                        <span>가입하기</span>
+                    </button>
+                </div>
+
+            </form>
+        </section>
+    </main>
+
+</th:block>
+<th:block layout:fragment="script">
+    <script th:src="@{/js/user/register_general.js}"></script>
+    <script>
+        $(function(){
+
+            $('input').on('change keyup', function (){
+                let okList = [emailOk, passOk, confirmPassOk, nickOk];
+
+                if(okList.includes(false)){
+                    $('button[type=submit]').removeClass("on");
+                    $('button[type=submit]').attr('disabled', true);
+                } else {
+                    $('button[type=submit]').addClass("on");
+                    $('button[type=submit]').attr('disabled', false);
+                }
+            })
+
+            $('button[type=submit]').click(function(e){
+
+                if(user_id_auth !== undefined && user_id_auth !== emailInput.val()){
+                    $('.btn_common.email').text('중복확인');
+                    $('.btn_common.email').attr('disabled', false);
+                    emailInput.attr('readonly', false);
+                    emailOk = false;
+                    alert('중복확인한 이메일과 다른 이메일주소가 입력되었습니다.\n다시 중복확인을 해주세요.');
+                    emailInput.focus();
+                    e.preventDefault();
+                    return;
+                }
+
+                let okList = [emailOk, passOk, confirmPassOk, nickOk];
+
+                for (i of inputList){ i.focus(); }
+
+                for (i in inputList){
+
+                    if(!okList[i]){
+                        inputList[i].focus();
+                        e.preventDefault();
+                        return;
+                    }
+                }
+            });
+        });
+    </script>
+</th:block>
+</html>

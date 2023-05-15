@@ -1,0 +1,163 @@
+<!--
+    날짜 : 2023/03/01
+    이름 : 황원진
+    내용 : 마이페이지 review-view HTML 
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="layouts/default-layout">
+    <th:block layout:fragment="css-js">
+        <link rel="stylesheet" th:href="@{/css/my/my.css}">
+        <!-- swiperSlider -->
+        <link rel="stylesheet" th:href="@{https://unpkg.com/swiper@7/swiper-bundle.min.css}" />
+        <script th:src="@{https://unpkg.com/swiper@7/swiper-bundle.min.js}"></script>
+    </th:block>
+    <th:block layout:fragment="content">
+            <main>
+                <section id="my">
+                    <th:block th:replace="~{fragments/_aside::myAside}"></th:block>
+                    <div class="content">
+                        <!-- 카테고리 -->
+                        <div class="tab">
+                            <span class="my_title">
+                                나의 리뷰
+                            </span>
+                        </div>
+                        <div class="my_review_view">
+                            <div class="my_review_tit">[[${review.revi_title}]]</div>
+                            <div class="my_review_rating">
+                                <!-- 임시 평점 -->
+                                <div class="star-ratings">
+                                    <span th:each="i:${#numbers.sequence(0, review.revi_rate-1)}">
+
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="my_review_days">
+                                <span>[[${review.acc_name}]]</span>
+                                <p>[[${review.res_checkIn}]] ~ [[${review.res_checkOut}]]</p>
+                            </div>
+                            <div class="review_swiper-container" th:if="${review.thumbs != null}">
+                                <!-- swiper Slider -->
+                                <div class="swiper-wrapper">
+                                    <div class="swiper-slide" th:each="image:${review.thumbs}"><img th:src="@{/img/review/__${review.res_no}__/__${image}__}" alt="#" /></div>
+                                </div>
+                                <div class="swiper-pagination"></div>
+                                <div class="swiper-button-next"></div>
+                                <div class="swiper-button-prev"></div>
+                            </div>
+                            <div class="my_review_textbox">
+                                <div class="my_review_text">
+                                    <textarea class="my_review_textarea">[[${review.revi_content}]]</textarea>
+                                    <b>작성일 [[${review.revi_rdate}]]</b>
+                                </div>
+                            </div>
+                            <div class="review_comment">
+                                <div class="review_commentarea">
+                                    <span>판매자 답변</span>
+                                    <th:block th:if="${review.revi_reply != null}">[[${review.revi_reply}]]</th:block>
+                                    <th:block th:if="${review.revi_reply == null}">등록된 답글이 없습니다.</th:block>
+                                    <b th:if="${review.revi_reply != null}">답변일 [[${review.revi_reply_rdate}]]</b>
+                                </div>
+                            </div>
+                            <div class="blank30"></div>
+                        </div>
+                        <div class="my_review_v_del">
+                            <a th:href="@{#}" class="deleteReview">삭제</a>
+                        </div>
+                        <div class="my_review_v_modify">
+                            <a th:href="@{/my/review/modify (res_no=${ review.res_no })}">수정</a>
+                        </div>
+                        <div class="my_review_v_list">
+                            <a th:href="@{/my/review/list}">목록으로</a>
+                        </div>
+                    </div>  
+                </section>
+            </main>
+            </th:block>
+            <th:block layout:fragment="script">
+                <script>
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const res_no = urlParams.get('res_no');
+
+                    const reviewTextarea     = document.querySelectorAll('.my_review_textarea');
+
+                    reviewTextarea.forEach(function(textarea){
+                        textarea.style.height = 'auto';
+                        textarea.style.height = textarea.scrollHeight + 25 +'px';
+                    });
+
+                    $(function(){
+                        /** Swiper Slider **/
+                        const swiper = new Swiper('.review_swiper-container', {
+                            //기본 셋팅
+                            //방향 셋팅 vertical 수직, horizontal 수평 설정이 없으면 수평
+                            direction: 'horizontal',
+                            //한번에 보여지는 페이지 숫자
+                            slidesPerView: 1,
+                            //페이지와 페이지 사이의 간격
+                            spaceBetween: 10,
+                            //드레그 기능 true 사용가능 false 사용불가
+                            debugger: true,
+                            //마우스 휠기능 true 사용가능 false 사용불가
+                            mousewheel: false,
+                            //반복 기능 true 사용가능 false 사용불가
+                            loop: true,
+                            //선택된 슬라이드를 중심으로 true 사용가능 false 사용불가 djqt
+                            centeredSlides: false,
+                            // 페이지 전환효과 slidesPerView효과와 같이 사용 불가
+                            // effect: 'fade',
+
+                            pagination: {
+                              el: '.swiper-pagination',
+                            },
+
+                            //방향표
+                            navigation: {
+                                //다음페이지 설정
+                                nextEl: '.swiper-button-next',
+                                //이전페이지 설정
+                                prevEl: '.swiper-button-prev',
+                            },
+                        });
+
+                        $('.deleteReview').click(function(e){
+                            e.preventDefault();
+
+                            Swal.fire({
+                                title: '정말 삭제하시겠습니까?',
+                                icon: 'question',
+                                showCancelButton: true,
+                                confirmButtonColor: '#3085d6',
+                                cancelButtonColor: '#d33',
+                                confirmButtonText: '확인',
+                                cancelButtonText: '취소',
+                                reverseButtons: false,
+                            }).then(result => {
+                                if (result.isConfirmed) {
+                                    let jsonData = { "res_no":res_no };
+
+                                    ajaxAPI("my/review", jsonData, "DELETE").then((response)=>{
+                                        if(response == 1) {
+                                            Swal.fire({
+                                                title: '리뷰가 삭제되었습니다.',
+                                                icon: 'info',
+                                                confirmButtonColor: '#3085d6',
+                                                cancelButtonColor: '#d33',
+                                                confirmButtonText: '확인',
+                                                reverseButtons: false,
+                                            }).then(result => {
+                                                location.href='/Lemo/my/review/list';
+                                            });
+                                        }else {
+                                            Swal.fire( '다시 시도해주세요.' );
+                                        }
+                                    });
+                                }
+                            });
+                        });
+                    });
+                </script>
+            </th:block>
+</html>

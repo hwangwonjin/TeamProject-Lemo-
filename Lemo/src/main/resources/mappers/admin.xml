@@ -1,0 +1,883 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+    날짜 : 2023/03/08
+    이름 : 이원정
+    내용 : 관리자 mapper
+ -->
+<mapper namespace="kr.co.Lemo.dao.AdminDAO">
+
+    <!-- 관리자 - 회원 목록 -->
+    <select id="selectUser" parameterType="kr.co.Lemo.utils.SearchCondition" resultType="kr.co.Lemo.domain.UserVO">
+        select * from `lemo_member_userinfo`
+        where 1=1
+        <include refid="searchLevel"/>
+        <include refid="searchType"/>
+        <include refid="searchIsNoticeEnabled"/>
+        <include refid="searchCondition"/>
+        <if test="sort != null">
+            <choose>
+                <when test="sort == 'isEnabledOn'">
+                    order by `isLocked` asc, `isEnabled` desc, `rdate` desc
+                </when>
+                <when test="sort == 'isEnabledOff'">
+                   order by `isLocked` desc, `isEnabled` asc, `rdate` desc
+                </when>
+                <when test="sort == 'levelOn'">
+                    order by `level` desc, `rdate` desc
+                </when>
+                <when test="sort == 'levelOff'">
+                    order by `level` asc, `rdate` desc
+                </when>
+                <when test="sort == 'typeOn'">
+                    order by `type` desc, `rdate` desc
+                </when>
+                <when test="sort == 'typeOff'">
+                    order by `type` asc, `rdate` desc
+                </when>
+                <when test="sort == 'rdateOn'">
+                    order by `rdate` asc
+                </when>
+                <when test="sort == 'rdateOff'">
+                    order by `rdate` desc
+                </when>
+            </choose>
+        </if>
+        <if test="sort == null">
+            order by `rdate` desc
+        </if>
+        limit #{offset}, 10;
+    </select>
+
+    <!-- 관리자 - 회원 목록 페이징 -->
+    <select id="countUser" parameterType="kr.co.Lemo.utils.SearchCondition" resultType="java.lang.Integer">
+        select count(*) from `lemo_member_userinfo`
+        where 1=1
+        <include refid="searchLevel"/>
+        <include refid="searchType"/>
+        <include refid="searchIsNoticeEnabled"/>
+        <include refid="searchCondition"/>
+        <!-- <include refid="orderUser"/> -->
+    </select>
+
+    <!-- 관리자 - 쿠폰 목록 -->
+    <select id="selectCoupon" parameterType="kr.co.Lemo.utils.SearchCondition" resultType="kr.co.Lemo.domain.CouponVO">
+        select * from `lemo_product_coupon`
+        where 1=1
+        <include refid="searchCouponType"/>
+        <include refid="searchCouponRole"/>
+        order by `cp_id` desc limit #{offset}, 10;
+    </select>
+
+    <!-- 관리자 - 쿠폰 목록 페이징  -->
+    <select id="countCoupon" parameterType="kr.co.Lemo.utils.SearchCondition" resultType="java.lang.Integer">
+        select count(*) from `lemo_product_coupon`
+        where 1=1
+        <include refid="searchCouponType"/>
+        <include refid="searchCouponRole"/>
+    </select>
+
+    <!-- admin - coupon - select accommodation owned for BUSINESS search-->
+    <select id="selectAccOwned" resultType="kr.co.Lemo.domain.CouponVO">
+        select `acc_name` from `lemo_product_accommodation` as a
+        join `lemo_product_coupon` as b on a.user_id = b.user_id
+        where a.`user_id`='3min-ik@hanmail.net'
+        group by `acc_name`;
+    </select>
+
+    <!-- 관리자 - 리뷰 목록  -->
+    <select id="selectReview" parameterType="kr.co.Lemo.utils.SearchCondition" resultType="kr.co.Lemo.domain.ReviewVO">
+        select * from `lemo_product_review` as a
+        inner join `lemo_product_reservation` as b on a.res_no=b.res_no
+        inner join `lemo_product_accommodation` as c on b.acc_id=c.acc_id
+        where 1=1
+        <include refid="searchReview"/>
+        order by `revi_rdate` desc limit #{offset}, 10;
+    </select>
+
+    <!-- 관리자 - 리뷰 목록 페이징 -->
+    <select id="countReview" parameterType="kr.co.Lemo.utils.SearchCondition" resultType="java.lang.Integer">
+        select count(*) from `lemo_product_review` as a
+        inner join `lemo_product_reservation` as b on a.res_no=b.res_no
+        inner join `lemo_product_accommodation` as c on b.acc_id=c.acc_id
+        where 1=1
+        <include refid="searchReview"/>
+    </select>
+
+    <!-- 관리자 - 리뷰 보기  -->
+    <select id="viewReview" resultType="kr.co.Lemo.domain.ReviewVO">
+        select * from `lemo_product_review` as a
+        inner join `lemo_product_reservation` as b on a.res_no=b.res_no
+        inner join `lemo_product_accommodation` as c on b.acc_id=c.acc_id
+        inner join `lemo_product_room` as d on b.room_id = d.room_id
+        where `revi_id`=#{revi_id};
+    </select>
+
+    <!-- 관리자 - 객실 목록 -->
+    <select id="selectRoom" parameterType="kr.co.Lemo.utils.SearchCondition" resultType="kr.co.Lemo.domain.ProductRoomVO">
+        select * from `lemo_product_room` as a
+        inner join `lemo_product_accommodation` as b on a.acc_id=b.acc_id
+        inner join `lemo_product_ratepolicy` as c on a.acc_id=c.acc_id
+        where 1=1
+        <include refid="searchRoom"/>
+        order by `room_id` desc limit #{offset}, 10;
+    </select>
+
+    <!-- 관리자 - 객실 목록 페이징 -->
+    <select id="countRoom" parameterType="kr.co.Lemo.utils.SearchCondition" resultType="java.lang.Integer">
+        select count(*) from `lemo_product_room` as a
+        inner join `lemo_product_accommodation` as b on a.acc_id=b.acc_id
+        inner join `lemo_product_ratepolicy` as c on a.acc_id=c.acc_id
+        where 1=1
+        <include refid="searchRoom"/>
+    </select>
+
+    <!-- 관리자 - 객실 보기 -->
+    <select id="viewRoom" resultType="kr.co.Lemo.domain.ProductRoomVO">
+        select * from `lemo_product_room` as a
+        inner join `lemo_product_accommodation` as b on a.acc_id=b.acc_id
+        inner join `lemo_product_ratepolicy` as c on a.acc_id=c.acc_id
+        where `room_id`=#{room_id};
+    </select>
+
+    <!-- 관리자 - 숙박 목록 -->
+    <select id="selectAccs" parameterType="kr.co.Lemo.utils.SearchCondition" resultType="kr.co.Lemo.domain.ProductAccommodationVO">
+        select * from `lemo_product_accommodation` as a
+        where 1=1
+        <include refid="searchAcc"/>
+        <include refid="searchAccProvince"/>
+        order by `acc_rdate` desc limit ${offset}, 10;
+    </select>
+
+     <!-- 관리자 - 숙박 목록 페이징 -->
+    <select id="countAccs" parameterType="kr.co.Lemo.utils.SearchCondition" resultType="java.lang.Integer">
+        select count(*) from `lemo_product_accommodation` as a
+        where 1=1
+        <include refid="searchAcc"/>
+        <include refid="searchAccProvince"/>
+    </select>
+
+    <!-- 관리자 - 숙박 지역 목록 -->
+    <select id="selectProvince" resultType="kr.co.Lemo.domain.ProvinceVO">
+        select * from `lemo_product_province`;
+    </select>
+
+    <!-- 관리자 - 숙박 보기 -->
+    <select id="viewAcc" resultType="kr.co.Lemo.domain.ProductAccommodationVO">
+        select * from `lemo_product_accommodation` as a
+        join `lemo_product_ratepolicy` as b on a.acc_id=b.acc_id
+        where a.`acc_id`=#{acc_id};
+    </select>
+
+    <!-- 관리자 - 숙박 보기 - 서비스 카테고리 -->
+    <select id="selectServiceInAcc" resultType="kr.co.Lemo.domain.ServicereginfoVO">
+        select * from `lemo_product_servicereginfo` as a
+        join `lemo_product_servicecate` as b on a.sc_no=b.sc_no
+        where `acc_id`=#{acc_id};
+    </select>
+
+    <!-- 관리자 - 예약정보 목록 -->
+    <select id="selectReservaitons" parameterType="kr.co.Lemo.utils.SearchCondition" resultType="kr.co.Lemo.domain.ReservationVO">
+        select * from `lemo_product_reservation` as a
+            inner join `lemo_product_room` as b on a.room_id=b.room_id
+            inner join `lemo_product_accommodation` as c on a.acc_id=c.acc_id
+        where 1=1
+        <include refid="searchAccInRes"/>
+        order by `res_state` asc limit ${offset}, 10;
+    </select>
+
+    <!-- 관리자 - 예약정보 목록 페이징 -->
+    <select id="countReservations" parameterType="kr.co.Lemo.utils.SearchCondition" resultType="java.lang.Integer">
+        select count(*) from `lemo_product_reservation` as a
+            inner join `lemo_product_room` as b on a.room_id=b.room_id
+            inner join `lemo_product_accommodation` as c on a.acc_id=c.acc_id
+        where 1=1
+        <include refid="searchAccInRes"/>
+    </select>
+
+    <!-- 관리자 타임라인 -->
+    <select id="selectTimeline" resultType="kr.co.Lemo.domain.ReservationVO">
+        select * from `lemo_product_reservation` as a
+            inner join `lemo_product_room` as b on a.room_id=b.room_id
+            inner join `lemo_product_accommodation` as c on a.acc_id=c.acc_id
+        where
+            month(a.`res_checkIn`) = month(current_date()) and
+            year(a.`res_checkIn`) = year(current_date());
+    </select>
+
+    <!-- (박종협) 관리자 - 메인 통계 -->
+    <select id="selectSales" resultType="kr.co.Lemo.domain.ReservationVO">
+        SELECT
+            (`res_price`-`res_disPrice`) AS `sales`, `res_checkIn`, `res_state`
+        FROM
+        	`lemo_product_reservation`   AS a LEFT JOIN
+        	`lemo_product_accommodation` AS b ON a.`acc_id` = b.`acc_id`
+        WHERE
+        	( `res_checkIn` BETWEEN DATE( date_add(now(), INTERVAL -6 DAY) ) AND DATE( NOW() ) )
+        	AND `res_state` NOT IN ( 0 )
+    </select>
+
+
+
+
+    <!-- 관리자 - 메인,통계관리 - 일별 누적 판매량 (기간 고정) -->
+    <select id="selectTodaySales" resultType="kr.co.Lemo.domain.ReservationVO">
+        SELECT DATE(res_checkIn) AS res_checkIn_date,
+            COUNT(`res_no`) as count_sales,
+            SUM(res_price - res_disPrice) AS tot_res_price
+        FROM lemo_product_reservation
+        WHERE res_state NOT IN (0)
+            AND DATE(res_checkIn) = CURDATE()
+        GROUP BY DATE(res_checkIn);
+    </select>
+
+     <!-- 관리자 - 메인 - 취소 건수 (당일) -->
+    <select id="countDayCancel" resultType="java.lang.Integer">
+        select count(a.`res_checkIn`)
+        from `lemo_product_reservation` as a
+        join `lemo_product_accommodation` as b on a.acc_id=b.acc_id
+        where a.res_state=0 AND a.`res_checkIn` BETWEEN DATE(date_add(now(), INTERVAL 0 DAY)) AND DATE(NOW());
+    </select>
+
+    <!-- 관리자 - 메인 - 1:1문의 -->
+    <select id="countDayQna" resultType="java.lang.Integer">
+        select count(`cs_no`) from `lemo_cs`
+        where `cs_cate`='qna'
+        and `cs_rdate` BETWEEN DATE(date_add(now(), INTERVAL 0 DAY)) AND DATE(NOW());
+    </select>
+
+    <!-- 관리자 - 메인 - 상품등록 -->
+    <select id="countDayAcc" resultType="java.lang.Integer">
+        select count(`acc_id`) from `lemo_product_accommodation`
+        where `acc_rdate` BETWEEN DATE(date_add(now(), INTERVAL 0 DAY)) AND DATE(NOW());
+    </select>
+
+     <!-- 관리자 - 메인 - 회원가입 -->
+    <select id="countDayUser" resultType="java.lang.Integer">
+        select count(`user_id`) from `lemo_member_userinfo`
+        where `rdate` BETWEEN DATE(date_add(now(), INTERVAL 0 DAY)) AND DATE(NOW());
+    </select>
+
+    <!-- 관리자 - 메인 - 판매량 그래프 (기간 고정) -->
+    <select id="selectDaySale" resultType="kr.co.Lemo.domain.ReservationVO">
+        SELECT DATE(a.res_checkIn) AS res_date,
+            MAX(a.res_state) AS res_state,
+            SUM(a.res_price) AS res_price,
+            SUM(a.res_disPrice) AS res_disPrice,
+            (SUM(a.res_price - a.res_disPrice)) AS tot_res_price
+            FROM lemo_product_reservation AS a
+        LEFT JOIN lemo_product_accommodation AS b ON a.acc_id = b.acc_id
+        WHERE a.res_state NOT IN (0)
+                AND a.`res_checkIn` BETWEEN DATE(date_add(now(), INTERVAL -6 DAY)) AND DATE(NOW())
+        GROUP BY DATE(a.res_checkIn)
+        ORDER BY DATE(a.res_checkIn) desc;
+    </select>
+
+     <!-- 관리자 - 메인 - 결제 방법 결제 현황 -->
+    <select id="selectPaymentDay" resultType="kr.co.Lemo.domain.ReservationVO">
+        select * from `lemo_product_reservation` as a
+        join `lemo_product_accommodation` as b on a.acc_id=b.acc_id
+        where a.res_state NOT IN (0) AND a.`res_checkIn` BETWEEN DATE(date_add(now(), INTERVAL -6 DAY)) AND DATE(NOW())
+        order by a.res_payment;
+    </select>
+
+    <!-- 관리자 - 메인 - 베스트 숙소 (평점+리뷰수) -->
+    <select id="selectBestAcc" resultType="kr.co.Lemo.domain.ProductAccommodationVO">
+        SELECT
+            a.acc_id, a.acc_name, a.user_id, a.acc_rdate, MAX(b.res_no) AS res_no,
+            MAX(revi_rdate) AS revi_rdate, MAX(res_state) AS res_state,
+            MAX(res_date) AS res_date, SUM((acc_rate*10) + acc_review) AS acc_best
+        FROM `lemo_product_accommodation` as a
+        JOIN `lemo_product_reservation` AS b ON a.acc_id=b.acc_id
+        JOIN `lemo_product_review` AS c ON b.res_no=c.res_no
+        WHERE `res_state` NOT IN (0)
+        GROUP BY a.acc_id, a.acc_name, a.user_id, a.acc_rdate
+        ORDER BY `acc_best` desc
+        LIMIT 5;
+    </select>
+
+
+    <!-- 관리자 - 통계관리 - 예약 건수 (기간 변동, 기본: 일주일) -->
+    <select id="countWeeksSales" parameterType="hashMap" resultType="java.lang.Integer">
+        select count(a.`res_checkIn`) from `lemo_product_reservation` as a
+            join `lemo_product_accommodation` as b on a.acc_id=b.acc_id
+        where a.res_state NOT IN (0)
+        <if test="periodType == 'week'">
+            AND `res_checkIn` <include refid="latestWeek"/>
+        </if>
+        <if test="periodType == 'day'">
+            AND `res_checkIn` <include refid="latestDay"/>
+        </if>
+        <if test="periodType == 'month'">
+            AND `res_checkIn` <include refid="latestMonth"/>
+        </if>
+        <if test="periodType == 'year'">
+            AND `res_checkIn` <include refid="latestYear"/>
+        </if>
+        <if test="dateStart != null or dateEnd != null">
+            AND `res_checkIn` <include refid="searchDate"/>
+        </if>
+    </select>
+
+    <!-- 관리자 - 통계관리 - 취소 건수 (기간 변동, 기본: 일주일) -->
+    <select id="countWeeksCancel" parameterType="hashMap" resultType="java.lang.Integer">
+        select count(a.`res_checkIn`) from `lemo_product_reservation` as a
+            join `lemo_product_accommodation` as b on a.acc_id=b.acc_id
+        where a.res_state=0
+        <if test="periodType == 'week'">
+            AND a.`res_checkIn` <include refid="latestWeek"/>
+        </if>
+        <if test="periodType == 'day'">
+            AND a.`res_checkIn` <include refid="latestDay"/>
+        </if>
+        <if test="periodType == 'month'">
+            AND a.`res_checkIn` <include refid="latestMonth"/>
+        </if>
+        <if test="periodType == 'year'">
+            AND a.`res_checkIn` <include refid="latestYear"/>
+        </if>
+        <if test="dateStart != null or dateEnd != null">
+            AND a.`res_checkIn` <include refid="searchDate"/>
+        </if>
+    </select>
+
+    <!-- 관리자 - 통계관리 - 1:1 문의수 (기간 변동, 기본: 일주일) -->
+    <select id="countWeeksQna" parameterType="hashMap" resultType="java.lang.Integer">
+        select count(`cs_no`) from `lemo_cs`
+        where `cs_cate`='qna'
+        <if test="periodType == 'week'">
+            AND `cs_rdate` <include refid="latestWeek"/>
+        </if>
+        <if test="periodType == 'day'">
+            AND `cs_rdate` <include refid="latestDay"/>
+        </if>
+        <if test="periodType == 'month'">
+            AND `cs_rdate` <include refid="latestMonth"/>
+        </if>
+        <if test="periodType == 'year'">
+            AND `cs_rdate` <include refid="latestYear"/>
+        </if>
+        <if test="dateStart != null or dateEnd != null">
+            AND `cs_rdate` <include refid="searchDate"/>
+        </if>
+    </select>
+
+     <!-- 관리자 - 통계관리 - 상품 등록 수 (기간 변동, 기본: 일주일) -->
+    <select id="countWeeksAcc" parameterType="hashMap" resultType="java.lang.Integer">
+        select count(`acc_id`) from `lemo_product_accommodation`
+        where 1=1
+        <if test="periodType == 'week'">
+            AND `acc_rdate` <include refid="latestWeek"/>
+        </if>
+        <if test="periodType == 'day'">
+            AND `acc_rdate` <include refid="latestDay"/>
+        </if>
+        <if test="periodType == 'month'">
+            AND `acc_rdate` <include refid="latestMonth"/>
+        </if>
+        <if test="periodType == 'year'">
+            AND `acc_rdate` <include refid="latestYear"/>
+        </if>
+        <if test="dateStart != null or dateEnd != null">
+            AND `acc_rdate` <include refid="searchDate"/>
+        </if>
+    </select>
+
+    <!-- 관리자 - 통계관리 - 회원가입 수 (기간 변동, 기본: 일주일) -->
+    <select id="countWeeksUser" parameterType="hashMap" resultType="java.lang.Integer">
+        select count(`user_id`) from `lemo_member_userinfo`
+        where 1=1
+        <if test="periodType == 'week'">
+            AND `rdate` <include refid="latestWeek"/>
+        </if>
+        <if test="periodType == 'day'">
+            AND `rdate` <include refid="latestDay"/>
+        </if>
+        <if test="periodType == 'month'">
+            AND `rdate` <include refid="latestMonth"/>
+        </if>
+        <if test="periodType == 'year'">
+            AND `rdate` <include refid="latestYear"/>
+        </if>
+        <if test="dateStart != null or dateEnd != null">
+            AND `rdate` <include refid="searchDate"/>
+        </if>
+    </select>
+
+    <!-- 관리자 - 통계관리 - 일별 누적 판매량 그래프 (기간 변동) -->
+    <select id="selectDaySales" parameterType="hashMap" resultType="kr.co.Lemo.domain.ReservationVO">
+        SELECT DATE(a.res_checkIn) AS res_date,
+            MAX(a.res_state) AS res_state,
+            SUM(a.res_price) AS res_price,
+            SUM(a.res_disPrice) AS res_disPrice,
+            (SUM(a.res_price - a.res_disPrice)) AS tot_res_price
+            FROM lemo_product_reservation AS a
+        LEFT JOIN lemo_product_accommodation AS b ON a.acc_id = b.acc_id
+        WHERE a.res_state NOT IN (0)
+            <if test="periodType == 'week'">
+                AND a.`res_checkIn` <include refid="latestWeek"/>
+            </if>
+            <if test="periodType == 'day'">
+                AND a.`res_checkIn` <include refid="latestDay"/>
+            </if>
+            <if test="periodType == 'month'">
+                AND a.`res_checkIn` <include refid="latestMonth"/>
+            </if>
+            <if test="periodType == 'year'">
+                AND a.`res_checkIn` <include refid="latestYear"/>
+            </if>
+            <if test="dateStart != null or dateEnd != null">
+                AND a.`res_checkIn` <include refid="searchDate"/>
+            </if>
+        GROUP BY DATE(a.res_checkIn)
+        ORDER BY DATE(a.res_checkIn) desc;
+    </select>
+
+    <!-- 관리자 - 통계관리 - 결제방법 결제 현황 (기간 변동) -->
+    <select id="selectPayment" parameterType="hashMap" resultType="kr.co.Lemo.domain.ReservationVO">
+        select * from `lemo_product_reservation` as a
+        join `lemo_product_accommodation` as b on a.acc_id=b.acc_id
+        where a.res_state NOT IN (0)
+        <if test="periodType == 'week'">
+            AND a.`res_checkIn` <include refid="latestWeek"/>
+        </if>
+        <if test="periodType == 'day'">
+            AND a.`res_checkIn` <include refid="latestDay"/>
+        </if>
+        <if test="periodType == 'month'">
+            AND a.`res_checkIn` <include refid="latestMonth"/>
+        </if>
+        <if test="periodType == 'year'">
+            AND a.`res_checkIn` <include refid="latestYear"/>
+        </if>
+        <if test="dateStart != null or dateEnd != null">
+            AND a.`res_checkIn` <include refid="searchDate"/>
+        </if>
+        order by a.res_payment;
+    </select>
+
+    <!-- 관리자 - 월별 매출 근황 그래프(기간 고정, 4month) -->
+    <select id="selectMonthSales" resultType="kr.co.Lemo.domain.ReservationVO">
+        SELECT
+            MONTH(a.res_date) AS res_month,
+            SUM(a.res_price - a.res_disPrice) AS tot_res_price,
+            COUNT(a.`res_checkIn`) AS tot_month_sales
+            FROM lemo_product_reservation AS a
+            LEFT JOIN lemo_product_accommodation AS b ON a.acc_id = b.acc_id
+        WHERE
+            a.res_state NOT IN (0)
+            AND a.res_checkIn BETWEEN DATE(date_add(now(), INTERVAL -4 MONTH))
+            AND DATE(NOW())
+        GROUP BY MONTH(a.res_date)
+        ORDER BY MONTH(a.res_date);
+    </select>
+
+    <!-- 관리자 - 통계관리 연 판매량 그래프 (기간 고정, 1year) -->
+    <select id="selectYearSales" resultType="kr.co.Lemo.domain.ReservationVO">
+        SELECT YEAR(a.res_date) AS res_date,
+            MAX(a.res_state) AS res_state,
+            SUM(a.res_price) AS res_price,
+            SUM(a.res_disPrice) AS res_disPrice,
+            (SUM(a.res_price - a.res_disPrice)) AS tot_res_price
+            FROM lemo_product_reservation AS a
+        LEFT JOIN lemo_product_accommodation AS b ON a.acc_id = b.acc_id
+        WHERE
+            a.res_state NOT IN (0)
+            AND a.res_checkIn BETWEEN DATE(date_add(now(), INTERVAL -2 YEAR))
+            AND DATE(NOW())
+        GROUP BY YEAR(a.res_date)
+        ORDER BY YEAR(a.res_date);
+    </select>
+
+    <!-- 관리자 - 쿠폰 등록  -->
+    <insert id="insertCoupon">
+        INSERT INTO `lemo_product_coupon` (
+            `user_id`, `user_role`, `cp_subject`, `cp_group`, `cp_type`,
+            `cp_rate`, `cp_disType`, `cp_price`, `cp_minimum`, `cp_maximum`,
+            `cp_start`, `cp_end`, `cp_daysAvailable`, `cp_limitedIssuance`
+        )
+        VALUES (
+            'admin@lemo.com', 'ADMIN', #{cp_subject}, #{cp_group}, #{cp_type}, #{cp_rate},
+            CASE
+                WHEN #{cp_rate} IS NOT NULL THEN '1'
+                WHEN #{cp_price} IS NOT NULL THEN '2'
+                ELSE NULL
+            END,
+            #{cp_price}, #{cp_minimum}, #{cp_maximum}, #{cp_start}, #{cp_end}, #{cp_daysAvailable}, #{cp_limitedIssuance}
+        );
+    </insert>
+
+    <!-- 관리자 - 회원 - 메모 입력 -->
+    <update id="updateMemo">
+        update `lemo_member_userinfo` set `memo`=#{memo} where `user_id`=#{user_id};
+    </update>
+
+    <!-- 관리자 - 예약 - 메모 입력 -->
+    <update id="updateMemoInRes">
+        update `lemo_product_reservation` set `res_memo`=#{res_memo} where `res_no`=#{res_no};
+    </update>
+
+    <!-- 관리자 - 회원 - 차단 -->
+    <update id="updateIsLocked">
+        update `lemo_member_userinfo` set `isLocked`=0 where `user_id`=#{user_id};
+    </update>
+
+    <!-- 관리자 - 회원 - 차단 해제 -->
+    <update id="updateIsLockedClear">
+        update `lemo_member_userinfo` set `isLocked`=1 where `user_id`=#{user_id};
+    </update>
+
+    <!-- admin - review - reply -->
+    <update id="updateReply">
+        update `lemo_product_review` set `revi_reply`=#{revi_reply} where `revi_id`=#{revi_id};
+    </update>
+
+
+
+
+    <!-- 관리자 - 숙박 목록 - 차단 -->
+    <update id="updateDropAcc">
+        update `lemo_product_accommodation` set `acc_state`='0' where `acc_id`=#{acc_id};
+    </update>
+
+    <!-- 관리자 - 숙박 목록 - 차단 해제 -->
+    <update id="updateClearAcc">
+        update `lemo_product_accommodation` set `acc_state`='1' where `acc_id`=#{acc_id};
+    </update>
+
+    <!-- 관리자 - 쿠폰 삭제 -->
+    <delete id="deleteCoupon">
+        delete from `lemo_product_coupon` where `cp_id`=#{cp_id};
+    </delete>
+
+    <!-- admin - review - delete review -->
+    <delete id="deleteReview">
+        delete from `lemo_product_review` where `revi_id`=#{revi_id};
+    </delete>
+
+
+    <!-- 공통 키 -->
+    <sql id="sortRdate">
+
+    </sql>
+
+    <!-- 회원검색  -->
+    <!-- 검색어 입력 (회원아이디/회원닉네임) -->
+    <sql id="searchCondition">
+        <if test="searchField != null">
+            <choose>
+                <when test='searchField == "userId"'>
+                   and `user_id` like CONCAT('%', #{searchWord}, '%')
+                </when>
+                <when test='searchField == "userNick"'>
+                   and `nick` like CONCAT('%', #{searchWord}, '%')
+                </when>
+            </choose>
+        </if>
+    </sql>
+
+    <!-- 계정활성화여부 (정상/탈퇴) -->
+    <sql id="searchIsEnabled">
+        <if test="searchIsEnabled != null">
+            <choose>
+                <when test="searchIsEnabled == 1">
+                    and `isEnabled`=1
+                </when>
+                <when test="searchIsEnabled == 0">
+                    and `isEnabled`=0
+                </when>
+            </choose>
+        </if>
+    </sql>
+
+    <!-- 알림동의여부 -->
+    <sql id="searchIsNoticeEnabled">
+        <if test="searchIsNoticeEnabled != null">
+            <choose>
+                <when test="searchIsNoticeEnabled == 1">
+                    and `isNoticeEnabled`=1
+                </when>
+                <when test="searchIsNoticeEnabled == 0">
+                    and `isNoticeEnabled`=0
+                </when>
+            </choose>
+        </if>
+    </sql>
+
+    <!-- 회원등급 (일반/엘리트) -->
+    <sql id="searchLevel">
+        <if test="searchLevel != null">
+            <choose>
+                <when test="searchLevel == 1">
+                    and `level`=1
+                </when>
+                <when test="searchLevel == 2">
+                    and `level`=2
+                </when>
+            </choose>
+        </if>
+    </sql>
+
+    <!-- 회원구분 (일반/판매자) -->
+    <sql id="searchType">
+        <if test="searchType != null">
+            <choose>
+                <when test="searchType == 1">
+                    and `role`='USER'
+                </when>
+                <when test="searchType == 2">
+                    and `role`='BUSINESS'
+                </when>
+            </choose>
+        </if>
+    </sql>
+
+    <!-- 회원 구분 (정렬) -->
+    <sql id="orderUser">
+        <if test="sort !=null">
+            <choose>
+                <when test="sort == 'isEnabledOn'">
+                    ORDER BY `isLocked` ASC, `isEnabled` DESC, `rdate` DESC
+                </when>
+                <when test="sort == 'isEnabledOff'">
+                    ORDER BY `isLocked` DESC, `isEnabled` ASC, `rdate` DESC
+                </when>
+            </choose>
+        </if>
+        <if test="sort == null">
+            ORDER BY `rdate` DESC
+        </if>
+    </sql>
+
+    <sql id="orderLevel">
+        <if test="sortLevel !=null">
+            <choose>
+                <when test="sortLevel == 'levelOn'">
+                    ORDER BY `level` DESC, `rdate` DESC
+                </when>
+                <when test="sortLevel == 'levelOff'">
+                    ORDER BY `level` ASC, `rdate` DESC
+                </when>
+            </choose>
+        </if>
+        <if test="sortLevel == null">
+            ORDER BY `rdate` DESC
+        </if>
+    </sql>
+
+    <sql id="orderType">
+        <if test="sortType !=null">
+            <choose>
+                <when test="sort == 'typeOn'">
+                    ORDER BY `type` DESC, `rdate` DESC
+                </when>
+                <when test="sort == 'typeOff'">
+                    ORDER BY `type` ASC, `rdate` DESC
+                </when>
+            </choose>
+        </if>
+        <if test="sort == null">
+            ORDER BY `rdate` DESC
+        </if>
+    </sql>
+
+    <sql id="orderRdate">
+       <if test="sortRdate !=null">
+           <choose>
+               <when test="sort == 'rdateOn'">
+                   ORDER BY `rdate` DESC
+               </when>
+               <when test="sort == 'rdateOff'">
+                   ORDER BY `rdate` ASC
+               </when>
+           </choose>
+       </if>
+       <if test="sort == null">
+           ORDER BY `rdate` DESC
+       </if>
+   </sql>
+
+
+
+    <!-- 쿠폰 검색 -->
+    <sql id="searchCouponType">
+        <if test="searchField != null">
+            <choose>
+                <when test='searchField == "acc_id"'>
+                    and `acc_id` like CONCAT('%', #{searchWord}, '%')
+                </when>
+                <when test='searchField == "cp_subject"'>
+                    and `cp_subject` like CONCAT('%', #{searchWord}, '%')
+                </when>
+                <when test='searchField == "user_id"'>
+                    and `user_id` like CONCAT('%', #{searchWord}, '%')
+                </when>
+            </choose>
+        </if>
+    </sql>
+
+    <sql id="searchCouponRole">
+        <if test="searchCouponRole != null">
+            <choose>
+                <when test='searchCouponRole == "ADMIN"'>
+                    and `user_role`='ADMIN'
+                </when>
+                <when test='searchCouponRole == "BUSINESS"'>
+                    and `user_role`='BUSINESS'
+                </when>
+            </choose>
+        </if>
+    </sql>
+
+    <!-- 리뷰 검색 -->
+    <sql id="searchReview">
+        <if test="searchField != null">
+            <choose>
+                <when test="searchField == 'acc_id'">
+                    and b.`acc_id` like CONCAT ('%', #{searchWord}, '%')
+                </when>
+                <when test="searchField == 'acc_name'">
+                    and `acc_name` like CONCAT ('%', #{searchWord}, '%')
+                </when>
+                <when test="searchField == 'user_id'">
+                    and c.`user_id` like CONCAT ('%', #{searchWord}, '%')
+                </when>
+            </choose>
+        </if>
+    </sql>
+
+    <!-- 객실 검색 -->
+    <sql id="searchRoom">
+        <if test="searchField != null">
+            <choose>
+                <when test='searchField == "acc_id"'>
+                   and b.`acc_id` like CONCAT('%', #{searchWord}, '%')
+                </when>
+                <when test='searchField == "acc_name"'>
+                   and `acc_name` like CONCAT('%', #{searchWord}, '%')
+                </when>
+                <when test='searchField == "room_id"'>
+                   and `room_id` like CONCAT('%', #{searchWord}, '%')
+                </when>
+                <when test='searchField == "room_name"'>
+                   and `room_name` like CONCAT('%', #{searchWord}, '%')
+                </when>
+            </choose>
+        </if>
+    </sql>
+
+    <!-- 숙박 검색 -->
+    <sql id="searchAcc">
+        <if test="searchField != null">
+            <choose>
+                <when test='searchField == "acc_id"'>
+                   and `acc_id` like CONCAT('%', #{searchWord}, '%')
+                </when>
+                <when test='searchField == "acc_name"'>
+                   and `acc_name` like CONCAT('%', #{searchWord}, '%')
+                </when>
+                <when test='searchField == "user_id"'>
+                   and `user_id` like CONCAT('%', #{searchWord}, '%')
+                </when>
+            </choose>
+        </if>
+    </sql>
+
+    <sql id="searchAccProvince">
+        <if test="searchAccProvince != null">
+            <choose>
+                <when test="searchAccProvince == 1">
+                    and `province_no`='1'
+                </when>
+                <when test="searchAccProvince == 2">
+                    and `province_no`='2'
+                </when>
+                <when test="searchAccProvince == 3">
+                    and `province_no`='3'
+                </when>
+                <when test="searchAccProvince == 4">
+                    and `province_no`='4'
+                </when>
+                <when test="searchAccProvince == 5">
+                    and `province_no`='5'
+                </when>
+                <when test="searchAccProvince == 6">
+                    and `province_no`='6'
+                </when>
+                <when test="searchAccProvince == 7">
+                    and `province_no`='7'
+                </when>
+                <when test="searchAccProvince == 8">
+                    and `province_no`='8'
+                </when>
+                <when test="searchAccProvince == 9">
+                    and `province_no`='9'
+                </when>
+                <when test="searchAccProvince == 10">
+                    and `province_no`='10'
+                </when>
+                <when test="searchAccProvince == 11">
+                    and `province_no`='11'
+                </when>
+                <when test="searchAccProvince == 12">
+                    and `province_no`='12'
+                </when>
+                <when test="searchAccProvince == 13">
+                    and `province_no`='13'
+                </when>
+                <when test="searchAccProvince == 14">
+                    and `province_no`='14'
+                </when>
+                <when test="searchAccProvince == 16">
+                    and `province_no`='15'
+                </when>
+                <when test="searchAccProvince == 17">
+                    and `province_no`='16'
+                </when>
+                <when test="searchAccProvince == 1">
+                    and `province_no`='17'
+                </when>
+            </choose>
+        </if>
+    </sql>
+
+    <!-- 관리자 - 예약 검색 (숙박 검색) -->
+    <sql id="searchAccInRes">
+        <if test="searchField != null">
+            <choose>
+                <when test='searchField == "acc_id"'>
+                    and a.`acc_id` like CONCAT('%', #{searchWord}, '%')
+                </when>
+                <when test='searchField == "acc_name"'>
+                    and `acc_name` like CONCAT('%', #{searchWord}, '%')
+                </when>
+                <when test='searchField == "res_no"'>
+                    and `res_no` like CONCAT('%', #{searchWord}, '%')
+                </when>
+                <when test='searchField == "res_name"'>
+                    and `res_name` like CONCAT('%', #{searchWord}, '%')
+                </when>
+            </choose>
+        </if>
+    </sql>
+
+    <sql id="latestDay">
+        BETWEEN DATE(date_add(now(), INTERVAL 0 DAY)) AND DATE(NOW())
+    </sql>
+    <sql id="latestWeek">
+        BETWEEN DATE(date_add(now(), INTERVAL -6 DAY)) AND DATE(NOW())
+    </sql>
+    <sql id="latestMonth">
+        BETWEEN DATE(date_add(now(), INTERVAL -1 MONTH)) AND DATE(NOW())
+    </sql>
+    <sql id="latestYear">
+        BETWEEN DATE(date_add(now(), INTERVAL -1 YEAR)) AND DATE(NOW())
+    </sql>
+    <sql id="searchDate">
+        BETWEEN #{dateStart} AND #{dateEnd}
+    </sql>
+
+
+</mapper>

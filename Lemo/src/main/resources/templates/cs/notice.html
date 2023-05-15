@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="layouts/default-layout">
+<th:block layout:fragment="css-js">
+    <link rel="stylesheet" th:href="@{/css/cs/cs.css}">
+    <style>
+        .show_list li #nonData {
+            overflow: visible;
+            white-space: normal;
+            text-overflow: initial;
+            line-height: normal;
+            word-wrap: break-word;
+            font-size: 19px;
+            width: 100%;
+            padding: 14px 0;
+            text-align: center;
+        }
+    </style>
+</th:block>
+<th:block layout:fragment="content">
+    <!-- 메인 -->
+    <main>
+        <section id="cs">
+            <!-- nav-->
+            <th:block th:replace="fragments/_aside::csAside"></th:block>
+            <!-- 본문 -->
+            <div class="content">
+                <!-- 카테고리 -->
+                <div class="tab">
+                    <span class="notice_title">
+                        서비스 공지사항<span class="new">NEW</span>
+                    </span>
+                </div>
+                <!-- 공지사항 목록 -->
+                <div class="tab_each">
+                    <ul id="notices" class="show_list open_list">
+                        <li th:if="${csArticles.size() == 0}">
+                            <p colspan="6" id="nonData">
+                                등록된 공지사항이 없습니다.
+                            </p>
+                        </li>
+                        <th:block th:each="notice:${csArticles}">
+                            <li>
+                                <a th:href="'#'+${notice.cs_no}" th:id="${notice.cs_no}" class="list_n">
+                                    <p>[[${notice.cs_title}]]</p>
+                                    <span>[[${notice.cs_rdate.substring(2, 10)}]]</span>
+                                </a>
+                                <div class="toggle" th:utext="${notice.cs_content}">
+
+                                </div>
+                            </li>
+                        </th:block>
+                    </ul>
+                </div>
+                <!-- 페이징 -->
+                <div class="paging" th:object="${ph}" th:style="${#lists.size(csArticles) == 0 ? 'visibility:hidden;':''}">
+                    <th:block th:if="*{showPrev}">
+                        <span class="prev">
+                            <a th:href="@{/cs/notice} + ${ph.sc.getQueryString(ph.beginPage-1)}"></a>
+                        </span>
+                    </th:block>
+
+                    <th:block th:each="num:${#numbers.sequence(ph.beginPage, ph.endPage)}">
+                        <span th:class="${num == ph.sc.page ? 'on':'num'}"><a th:href="@{/cs/notice} + ${ph.sc.getQueryString(num)}" >[[${num}]]</a></span>
+                    </th:block>
+
+                    <th:block th:if="*{showNext}">
+                        <span class="next"><a th:href="@{/cs/notice} + ${ph.sc.getQueryString(ph.endPage+1)}">  </a></span>
+                    </th:block>
+                </div>
+
+            </div>
+        </section>
+    </main>
+</th:block>
+
+<th:block layout:fragment="script">
+    <script th:src="@{/js/cs/toggle.js}"></script>
+    <script>
+
+        $(document).ready(function () {
+            const cs_no = "[[${param.cs_no}]]"|| null;
+            if(cs_no != null){
+                $('#'+cs_no).trigger("click");
+                $('#'+cs_no)[0].scrollIntoView({ behavior: 'instant' });
+            }
+        });
+    </script>
+</th:block>
+</html>

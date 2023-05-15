@@ -1,0 +1,929 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+    날짜 : 2023/03/13
+    이름 : 이원정
+    내용 : 판매자 mapper
+ -->
+<mapper namespace="kr.co.Lemo.dao.BusinessDAO">
+
+    <!-- 판매자 - 쿠폰 목록 -->
+    <select id="selectCoupon" parameterType="kr.co.Lemo.utils.SearchCondition" resultType="kr.co.Lemo.domain.CouponVO">
+        select * from `lemo_product_coupon`
+        where `user_id`=#{user_id}
+        <if test="acc_id != null">
+            and `acc_id`=#{acc_id}
+        </if>
+        order by `cp_id` desc limit #{offset}, 10;
+    </select>
+
+    <!-- 판매자 - 쿠폰 목록 페이징 -->
+    <select id="countCoupon" parameterType="kr.co.Lemo.utils.SearchCondition" resultType="java.lang.Integer">
+        select count(*) from `lemo_product_coupon`
+        where `user_id`=#{user_id}
+        <if test="acc_id != null">
+            and `acc_id`=#{acc_id}
+        </if>
+    </select>
+
+    <!-- business - coupon - select accommodation owned for BUSINESS search-->
+    <select id="selectAccOwned" resultType="kr.co.Lemo.domain.CouponVO">
+        select `acc_name` from `lemo_product_accommodation` as a
+        join `lemo_product_coupon` as b on a.user_id = b.user_id
+        where a.`user_id`='0hotelthem1@gmail.com'
+        group by `acc_name`;
+    </select>
+
+    <!-- 판매자 - 리뷰 목록 -->
+    <select id="selectReview" parameterType="kr.co.Lemo.utils.SearchCondition" resultType="kr.co.Lemo.domain.ReviewVO">
+        select * from `lemo_product_review` as a
+        inner join `lemo_product_reservation` as b on a.res_no=b.res_no
+        join `lemo_product_accommodation` as c on b.acc_id=c.acc_id
+        where c.`user_id`=#{user_id}
+        <if test="acc_id != null">
+            and b.`acc_id`=#{acc_id}
+        </if>
+        order by `revi_rdate` desc limit #{offset}, 10;
+    </select>
+
+    <!-- 판매자 - 리뷰 목록 페이징 -->
+    <select id="countReview" parameterType="kr.co.Lemo.utils.SearchCondition"  resultType="java.lang.Integer">
+        select count(*) from `lemo_product_review` as a
+        inner join `lemo_product_reservation` as b on a.res_no=b.res_no
+        join `lemo_product_accommodation` as c on b.acc_id=c.acc_id
+        where c.`user_id`=#{user_id}
+        <if test="acc_id != null">
+            and b.`acc_id`=#{acc_id}
+        </if>
+    </select>
+
+    <!-- business - review - select accommodation owned for BUSINESS search -->
+    <select id="selectAccOwnedForReview" resultType="kr.co.Lemo.domain.ReviewVO">
+        select c.`acc_id`, c.`acc_name` from `lemo_product_review` as a
+        inner join `lemo_product_reservation` as b on a.res_no=b.res_no
+        inner join `lemo_product_accommodation` as c on b.acc_id=c.acc_id
+        where c.`user_id`='1foodtax@within.co.kr';
+    </select>
+
+    <!-- 판매자 - 리뷰 보기  -->
+    <select id="viewReview" resultType="kr.co.Lemo.domain.ReviewVO">
+        select * from `lemo_product_review` as a
+        inner join `lemo_product_reservation` as b on a.res_no=b.res_no
+        inner join `lemo_product_accommodation` as c on b.acc_id=c.acc_id
+        inner join `lemo_product_room` as d on b.room_id = d.room_id
+        where `revi_id`=#{revi_id};
+    </select>
+
+    <!-- business - info - service -->
+    <select id="selectService" resultType="kr.co.Lemo.domain.ServiceCateVO">
+        select * from `lemo_product_servicecate`;
+    </select>
+
+    <!-- business - info - write (Accommodation registration::select province) -->
+    <select id="selectProvince" resultType="kr.co.Lemo.domain.ProvinceVO">
+        select * from `lemo_product_province`;
+    </select>
+
+    <!-- 판매자 숙박 목록 -->
+    <select id="selectAccForInfo" parameterType="kr.co.Lemo.utils.SearchCondition" resultType="kr.co.Lemo.domain.ProductAccommodationVO">
+        select * from `lemo_product_accommodation`
+        where `user_id`=#{user_id}
+        and `acc_state`!=2
+        <include refid="searchAcc"/>
+        order by `acc_id` desc limit #{offset}, 10;
+    </select>
+
+    <!-- 판매자 숙박 목록 페이징 -->
+    <select id="countAcc" parameterType="kr.co.Lemo.utils.SearchCondition" resultType="java.lang.Integer">
+        select count(*) from `lemo_product_accommodation`
+        where `user_id`=#{user_id}
+        and `acc_state`!=2
+        <include refid="searchAcc"/>
+    </select>
+
+    <!-- 판매자 소유 숙박 목록 -->
+    <select id="selectAccOwnedForInfo" resultType="kr.co.Lemo.domain.ProductAccommodationVO">
+        select * from `lemo_product_accommodation`
+        where `user_id`=#{user_id}
+        and `acc_state`!=2;
+    </select>
+
+
+    <!-- 판매자 숙박 보기 -->
+    <select id="viewAcc" resultType="kr.co.Lemo.domain.ProductAccommodationVO">
+        select * from `lemo_product_accommodation` as a
+        join `lemo_product_ratepolicy` as b on a.acc_id=b.acc_id
+        where a.`acc_id`=#{acc_id};
+    </select>
+
+    <!-- 판매자 숙박 보기 - 서비스 카테고리 -->
+    <select id="selectServiceInAcc" resultType="kr.co.Lemo.domain.ServicereginfoVO">
+        select * from `lemo_product_servicereginfo` as a
+        join `lemo_product_servicecate` as b on a.sc_no=b.sc_no
+        where `acc_id`=#{acc_id};
+    </select>
+
+    <!-- 판매자 - 객실 목록 -->
+    <select id="selectRoom" parameterType="kr.co.Lemo.utils.SearchCondition" resultType="kr.co.Lemo.domain.ProductRoomVO">
+        select * from `lemo_product_room` as a
+        inner join `lemo_product_accommodation` as b on a.acc_id=b.acc_id
+        inner join `lemo_product_ratepolicy` as c on a.acc_id=c.acc_id
+        where `user_id` = #{user_id}
+        and `room_state`!=2
+        <include refid="searchRoom"/>
+        order by `room_id` desc limit #{offset}, 10;
+    </select>
+
+    <!-- 판매자 - 객실 목록 페이징 -->
+    <select id="countRoom"  parameterType="kr.co.Lemo.utils.SearchCondition" resultType="java.lang.Integer">
+        select count(*) from `lemo_product_room` as a
+        inner join `lemo_product_accommodation` as b on a.acc_id=b.acc_id
+        inner join `lemo_product_ratepolicy` as c on a.acc_id=c.acc_id
+        where `user_id` = #{user_id}
+        and `room_state`!=2
+        <include refid="searchRoom"/>
+    </select>
+
+    <!-- 판매자 - 객실 보기 -->
+    <select id="viewRoom" resultType="kr.co.Lemo.domain.ProductRoomVO">
+        select * from `lemo_product_room` as a
+        inner join `lemo_product_accommodation` as b on a.acc_id=b.acc_id
+        inner join `lemo_product_ratepolicy` as c on a.acc_id=c.acc_id
+        where `room_id`=#{room_id};
+    </select>
+
+    <!-- 판매자 - 예약정보 목록 -->
+    <select id="selectReservaitons" parameterType="kr.co.Lemo.utils.SearchCondition" resultType="kr.co.Lemo.domain.ReservationVO">
+        select * from `lemo_product_reservation` as a
+            inner join `lemo_product_room` as b on a.room_id=b.room_id
+            inner join `lemo_product_accommodation` as c on a.acc_id=c.acc_id
+        where c.`user_id`=#{user_id}
+        <if test="acc_id != null">
+            and a.`acc_id`=#{acc_id}
+        </if>
+        order by `res_state` asc limit ${offset}, 10;
+    </select>
+
+
+    <!-- 판매자 - 예약정보 목록 페이징 -->
+    <select id="countReservations"  parameterType="kr.co.Lemo.utils.SearchCondition" resultType="java.lang.Integer">
+        select count(*) from `lemo_product_reservation` as a
+        inner join `lemo_product_room` as b on a.room_id=b.room_id
+        inner join `lemo_product_accommodation` as c on a.acc_id=c.acc_id
+        where c.`user_id`=#{user_id}
+        <if test="acc_id != null">
+            and a.`acc_id`=#{acc_id}
+        </if>
+    </select>
+
+    <!-- 판매자 - 메인 - 일별 누적 판매량 (당일) -->
+    <select id="selectTodaySales" resultType="kr.co.Lemo.domain.ReservationVO">
+        SELECT DATE(a.res_checkIn) AS res_date,
+            COUNT(`res_no`) as count_sales,
+            (SUM(a.res_price - a.res_disPrice)) AS tot_res_price
+        FROM lemo_product_reservation AS a
+            LEFT JOIN lemo_product_accommodation AS b ON a.acc_id = b.acc_id
+        WHERE a.res_state NOT IN (0) AND a.res_checkIn BETWEEN DATE(date_add(now(), INTERVAL 0 DAY))
+            AND DATE(NOW())
+            AND b.user_id=#{user_id}
+            <if test="acc_id != null">
+                and b.`acc_id`=#{acc_id}
+            </if>
+        GROUP BY DATE(a.res_checkIn);
+    </select>
+
+    <!-- 판매자 - 메인 - 취소 건수 (당일) -->
+     <select id="countDayCancel" resultType="java.lang.Integer">
+        select count(a.`res_checkIn`) from `lemo_product_reservation` as a
+            join `lemo_product_accommodation` as b on a.acc_id=b.acc_id
+        where a.res_state = 0
+            AND a.`res_checkIn` BETWEEN DATE(date_add(now(), INTERVAL 0 DAY))
+            AND DATE(NOW())
+            AND b.user_id=#{user_id};
+    </select>
+
+    <!-- 판매자 - 메인 - 문의수 (당일) -->
+    <select id="countDayQna" resultType="java.lang.Integer">
+        select count(`qna_no`) from `lemo_product_qna` as a
+            join `lemo_product_accommodation` as b on a.acc_id=b.acc_id
+        where b.`user_id`='b267@naver.com'
+            AND DATE(qna_rdate) = CURDATE();
+    </select>
+
+    <!-- 판매자 - 메인 - 최신 리뷰 (당일) -->
+    <select id="selectReviewLatest" resultType="kr.co.Lemo.domain.ReviewVO">
+        select a.`res_no`, `revi_title`, `revi_content`, `revi_rate`, `revi_rdate`, c.`acc_id`, c.`user_id` from `lemo_product_review` as a
+            join `lemo_product_reservation` as b on a.res_no=b.res_no
+            join `lemo_product_accommodation` as c on b.acc_id=c.acc_id
+        where c.`user_id`=#{user_id}
+        order by `revi_rdate` desc
+        limit 5;
+    </select>
+
+    <!-- 판매자 - 메인 - 리뷰 수 (당일) -->
+    <select id="countDayReview" resultType="java.lang.Integer">
+        select count(revi_id) from `lemo_product_review` as a
+            join `lemo_product_reservation` as b on a.res_no=b.res_no
+            join `lemo_product_accommodation` as c on b.acc_id=c.acc_id
+        where c.`user_id`='b267@naver.com'
+            and DATE(revi_rdate) = CURDATE();
+    </select>
+
+    <!-- 판매자 - 메인 - 숙소 리스트 -->
+    <select id="selectAccsList" resultType="kr.co.Lemo.domain.ProductAccommodationVO">
+        select acc_id from `lemo_product_accommodation`
+        where `user_id`=#{user_id};
+    </select>
+
+    <!-- 판매자 - 통계관리 - 일별 누적 판매량 (기간 변동) -->
+    <select id="selectDaySales" parameterType="hashMap" resultType="kr.co.Lemo.domain.ReservationVO">
+        SELECT DATE(a.res_checkIn) AS res_date,
+            MAX(a.res_state) AS res_state,
+            SUM(a.res_price) AS res_price,
+            SUM(a.res_disPrice) AS res_disPrice,
+            (SUM(a.res_price - a.res_disPrice)) AS tot_res_price
+            FROM lemo_product_reservation AS a
+        LEFT JOIN lemo_product_accommodation AS b ON a.acc_id = b.acc_id
+        WHERE a.res_state NOT IN (0)
+        	<if test="periodType == 'week'">
+                AND a.`res_checkIn` <include refid="latestWeek"/>
+            </if>
+            <if test="periodType == 'day'">
+                AND a.`res_checkIn` <include refid="latestDay"/>
+            </if>
+            <if test="periodType == 'month'">
+                AND a.`res_checkIn` <include refid="latestMonth"/>
+            </if>
+            <if test="periodType == 'year'">
+                AND a.`res_checkIn` <include refid="latestYear"/>
+            </if>
+            <if test="dateStart != null and dateEnd != null">
+                AND a.`res_checkIn` <include refid="searchDate"/>
+            </if>
+        	AND b.user_id=#{user_id}
+            <if test="acc_id != null">
+                AND a.acc_id=#{acc_id}
+            </if>
+        GROUP BY DATE(a.res_checkIn)
+        ORDER BY DATE(a.res_checkIn) desc;
+    </select>
+
+    <!-- 판매자 - 통계관리 - 당일 시간대별 판매량 -->
+    <select id="selectTimeSales" resultType="kr.co.Lemo.domain.ReservationVO">
+        select
+            res_date,
+            SUM(res_price - res_disPrice) from `lemo_product_reservation` as a
+            join `lemo_product_accommodation` as b on a.acc_id=b.acc_id
+        where res_state not in(0)
+            and DATE(res_date) = CURDATE()
+            and a.`acc_id`=#{acc_id}
+        group by `res_date`
+        order by `res_date` asc;
+    </select>
+
+    <!-- 판매자 - 통계관리 연 판매량 -->
+    <select id="selectYearSales" resultType="kr.co.Lemo.domain.ReservationVO">
+    SELECT
+        yrs.res_date,
+        COALESCE(yrs.res_state, 0) AS res_state,
+        COALESCE(yrs.res_price, 0) AS res_price,
+        COALESCE(yrs.res_disPrice, 0) AS res_disPrice,
+        COALESCE(yrs.tot_res_price, 0) AS tot_res_price
+    FROM (
+        SELECT
+            YEAR(CURDATE() - INTERVAL 2 YEAR) AS res_date
+        UNION SELECT
+            YEAR(CURDATE() - INTERVAL 1 YEAR) AS res_date
+        UNION SELECT
+            YEAR(CURDATE()) AS res_date
+    ) AS years
+    LEFT JOIN (
+        SELECT
+            YEAR(a.res_date) AS res_date,
+            MAX(a.res_state) AS res_state,
+            SUM(a.res_price) AS res_price,
+            SUM(a.res_disPrice) AS res_disPrice,
+            (SUM(a.res_price - a.res_disPrice)) AS tot_res_price
+        FROM lemo_product_reservation AS a
+    LEFT JOIN lemo_product_accommodation AS b ON a.acc_id = b.acc_id
+    WHERE b.`user_id`=#{user_id}
+        AND a.res_state NOT IN (0)
+        AND a.res_checkIn BETWEEN DATE(date_add(now(), INTERVAL -2 YEAR)) AND DATE(NOW())
+        <if test="acc_id != null">
+            AND b.acc_id=#{acc_id}
+        </if>
+    GROUP BY YEAR(a.res_date)
+    ) AS yrs ON years.res_date = yrs.res_date
+    ORDER BY years.res_date;
+    </select>
+
+    <!-- 판매자 - 결제방법 결제 현황 -->
+    <select id="selectPayment" parameterType="hashMap" resultType="kr.co.Lemo.domain.ReservationVO">
+        select * from `lemo_product_reservation` as a
+        join `lemo_product_accommodation` as b on a.acc_id=b.acc_id
+        where a.res_state NOT IN (0)
+            <if test="periodType == 'week'">
+                AND a.`res_checkIn` <include refid="latestWeek"/>
+            </if>
+            <if test="periodType == 'day'">
+                AND a.`res_checkIn` <include refid="latestDay"/>
+            </if>
+            <if test="periodType == 'month'">
+                AND a.`res_checkIn` <include refid="latestMonth"/>
+            </if>
+            <if test="periodType == 'year'">
+                AND a.`res_checkIn` <include refid="latestYear"/>
+            </if>
+            <if test="dateStart != null and dateEnd != null">
+                AND a.`res_checkIn` <include refid="searchDate"/>
+            </if>
+            AND b.user_id=#{user_id}
+            <if test="acc_id != null">
+                AND a.acc_id=#{acc_id}
+            </if>
+        order by a.res_payment;
+    </select>
+
+    <!-- 판매자 - 월별 매출 근황 (월별 4달 기준) -->
+    <select id="selectMonthSales" resultType="kr.co.Lemo.domain.ReservationVO">
+        SELECT
+            months.res_month, COALESCE(totals.tot_res_price, 0) AS tot_res_price,
+            COALESCE(totals.tot_month_sales, 0) AS tot_month_sales
+        FROM (
+            SELECT 1 AS res_month UNION SELECT 2 UNION SELECT 3 UNION SELECT 4
+        ) AS months
+        LEFT JOIN (
+            SELECT
+                MONTH(a.res_date) AS res_month,
+                SUM(a.res_price - a.res_disPrice) AS tot_res_price,
+                COUNT(a.`res_checkIn`) AS tot_month_sales
+            FROM lemo_product_reservation AS a
+            LEFT JOIN lemo_product_accommodation AS b ON a.acc_id = b.acc_id
+            WHERE b.`user_id`=#{user_id}
+                AND a.res_state NOT IN (0) AND a.res_checkIn BETWEEN DATE(date_add(now(), INTERVAL -4 MONTH))
+                AND DATE(NOW())
+                <if test="acc_id != null">
+                    AND b.acc_id=#{acc_id}
+                </if>
+            GROUP BY MONTH(a.res_date)
+        ) AS totals ON months.res_month = totals.res_month
+        ORDER BY months.res_month;
+    </select>
+
+    <!-- 판매자 - 객실별 예약 현황 (일주일) -->
+    <select id="selectWeeksRoom" resultType="kr.co.Lemo.domain.ReservationVO">
+        select
+            a.`room_id`,
+            b.`room_name`,
+            COUNT(a.`room_id`) as count_sales,
+            SUM(a.`res_price` - a.`res_disPrice`) as tot_res_price,
+            b.`room_stock`
+        from
+            `lemo_product_reservation` as a
+            inner join `lemo_product_room` as b on a.room_id=b.room_id
+            inner join `lemo_product_accommodation` as c on a.acc_id=c.acc_id
+        where
+            a.res_state NOT IN (0)
+            <if test="periodType == 'week'">
+                AND a.`res_checkIn` <include refid="latestWeek"/>
+            </if>
+            <if test="periodType == 'day'">
+                AND a.`res_checkIn` <include refid="latestDay"/>
+            </if>
+            <if test="periodType == 'month'">
+                AND a.`res_checkIn` <include refid="latestMonth"/>
+            </if>
+            <if test="periodType == 'year'">
+                AND a.`res_checkIn` <include refid="latestYear"/>
+            </if>
+            <if test="dateStart != null and dateEnd != null">
+                AND a.`res_checkIn` <include refid="searchDate"/>
+            </if>
+            and c.`user_id`=#{user_id}
+            <if test="acc_id != null">
+                and a.`acc_id`=#{acc_id}
+            </if>
+        group by
+            a.`room_id`;
+    </select>
+
+    <!-- 객실 이미지 가져오기 -->
+    <select id="selectRoomThumb" resultType="String">
+        SELECT `room_thumb` FROM `lemo_product_room` WHERE `room_id` = #{room_id};
+    </select>
+
+    <!-- 판매자 - 통계관리 - 예약 건수 (기간 변동, 기본: 일주일) -->
+    <select id="countWeeksSales" parameterType="hashMap" resultType="java.lang.Integer">
+        select count(a.`res_checkIn`) from `lemo_product_reservation` as a
+            join `lemo_product_accommodation` as b on a.acc_id=b.acc_id
+        where a.res_state NOT IN (0)
+            <if test="periodType == 'week'">
+                AND a.`res_checkIn` <include refid="latestWeek"/>
+            </if>
+            <if test="periodType == 'day'">
+                AND a.`res_checkIn` <include refid="latestDay"/>
+            </if>
+            <if test="periodType == 'month'">
+                AND a.`res_checkIn` <include refid="latestMonth"/>
+            </if>
+            <if test="periodType == 'year'">
+                AND a.`res_checkIn` <include refid="latestYear"/>
+            </if>
+            <if test="dateStart != null and dateEnd != null">
+                AND res_checkIn <include refid="searchDate"/>
+            </if>
+            AND b.user_id=#{user_id}
+            <if test="acc_id != null">
+                AND a.acc_id=#{acc_id};
+            </if>
+    </select>
+
+    <select id="countDaySales" resultType="java.lang.Integer">
+        select count(a.`res_checkIn`) from `lemo_product_reservation` as a
+            join `lemo_product_accommodation` as b on a.acc_id=b.acc_id
+        where a.`res_checkIn` BETWEEN DATE(date_add(now(), INTERVAL 0 DAY))
+            AND DATE(NOW())
+            AND b.user_id=#{user_id};
+    </select>
+
+    <sql id="latestDay">
+        BETWEEN DATE(date_add(now(), INTERVAL 0 DAY)) AND DATE(NOW())
+    </sql>
+    <sql id="latestWeek">
+        BETWEEN DATE(date_add(now(), INTERVAL -6 DAY)) AND DATE(NOW())
+    </sql>
+    <sql id="latestMonth">
+        BETWEEN DATE(date_add(now(), INTERVAL -1 MONTH)) AND DATE(NOW())
+    </sql>
+    <sql id="latestYear">
+        BETWEEN DATE(date_add(now(), INTERVAL -1 YEAR)) AND DATE(NOW())
+    </sql>
+    <sql id="searchDate">
+        BETWEEN #{dateStart} AND #{dateEnd}
+    </sql>
+
+
+    <!-- 판매자 - 통계관리 - 취소 건수 (기간 변동, 기본: 일주일) -->
+    <select id="countWeeksCancel" parameterType="hashMap"  resultType="java.lang.Integer">
+        select count(a.`res_checkIn`) from `lemo_product_reservation` as a
+            join `lemo_product_accommodation` as b on a.acc_id=b.acc_id
+        where a.res_state=0
+            <if test="periodType == 'week'">
+                AND a.`res_checkIn` <include refid="latestWeek"/>
+            </if>
+            <if test="periodType == 'day'">
+                AND a.`res_checkIn` <include refid="latestDay"/>
+            </if>
+            <if test="periodType == 'month'">
+                AND a.`res_checkIn` <include refid="latestMonth"/>
+            </if>
+            <if test="periodType == 'year'">
+                AND a.`res_checkIn` <include refid="latestYear"/>
+            </if>
+            <if test="dateStart != null and dateEnd != null">
+                AND a.`res_checkIn` <include refid="searchDate"/>
+            </if>
+            AND b.user_id=#{user_id}
+            <if test="acc_id != null">
+                AND a.acc_id=#{acc_id};
+            </if>
+    </select>
+
+
+    <!-- 판매자 미배정 객실 (전체 객실수/당일 체크인 객실 수 ) -->
+    <select id="countTotalRoom" resultType="java.lang.Integer">
+        select count(room_id) from `lemo_product_room` as a
+            join `lemo_product_accommodation` as b on a.acc_id=b.acc_id
+        where b.user_id=#{user_id};
+    </select>
+    <select id="countCheckInRoom" resultType="java.lang.Integer">
+        select count(a.room_id) from `lemo_product_reserved_room` as a
+            join `lemo_product_room` as b on a.room_id=b.room_id
+            join `lemo_product_accommodation` as c on b.acc_id=c.acc_id
+        where `rero_checkIn_date` BETWEEN DATE(date_add(now(), INTERVAL 0 DAY))
+            and DATE(NOW())
+            and c.user_id=#{user_id};
+    </select>
+
+
+
+    <!-- 판매자 - 통계관리 - 1:1 문의수 (기간 변동, 기본: 일주일) -->
+    <select id="countWeeksQna" parameterType="hashMap" resultType="java.lang.Integer">
+        select count(`qna_no`) from `lemo_product_qna` as a
+            join `lemo_product_accommodation` as b on a.acc_id=b.acc_id
+        where b.`user_id`=#{user_id}
+            <if test="periodType == 'week'">
+                AND `qna_rdate` <include refid="latestWeek"/>
+            </if>
+            <if test="periodType == 'day'">
+                AND `qna_rdate` <include refid="latestDay"/>
+            </if>
+            <if test="periodType == 'month'">
+                AND `qna_rdate` <include refid="latestMonth"/>
+            </if>
+            <if test="periodType == 'year'">
+                AND `qna_rdate` <include refid="latestYear"/>
+            </if>
+            <if test="dateStart != null and dateEnd != null">
+                AND `qna_rdate` <include refid="searchDate"/>
+            </if>
+            <if test="acc_id != null">
+                AND a.acc_id=#{acc_id};
+            </if>
+    </select>
+
+    <!-- 판매자 - 상품 등록 수 (일주일) -->
+    <select id="countWeeksAcc" resultType="java.lang.Integer">
+        SELECT count(acc_id)
+            FROM `lemo_product_accommodation`
+        WHERE user_id=#{user_id}
+        <if test="periodType == 'week'">
+            AND `acc_rdate` <include refid="latestWeek"/>
+        </if>
+        <if test="periodType == 'day'">
+            AND `acc_rdate` <include refid="latestDay"/>
+        </if>
+        <if test="periodType == 'month'">
+            AND `acc_rdate` <include refid="latestMonth"/>
+        </if>
+        <if test="periodType == 'year'">
+            AND `acc_rdate` <include refid="latestYear"/>
+        </if>
+        <if test="acc_id != null">
+            AND acc_id=#{acc_id};
+        </if>
+    </select>
+
+    <!-- 판매자 - 통계관리 - 평점 -->
+    <select id="selectRates" resultType="kr.co.Lemo.domain.ProductAccommodationVO">
+        select acc_rate from `lemo_product_accommodation`
+        where `user_id`=#{user_id}
+        and `acc_state`!=2
+        <if test="acc_id != null">
+            AND acc_id=#{acc_id};
+        </if>
+    </select>
+
+    <!-- 판매자  - 통계관리 - 등록 리뷰 수  (기간 변동, 기본: 일주일) -->
+    <select id="countWeeksReview" parameterType="hashMap" resultType="java.lang.Integer">
+        select count(revi_id) from `lemo_product_review` as a
+            join `lemo_product_reservation` as b on a.res_no=b.res_no
+            join `lemo_product_accommodation` as c on b.acc_id=c.acc_id
+        where c.`user_id`=#{user_id}
+            <if test="periodType == 'week'">
+                AND `revi_rdate` <include refid="latestWeek"/>
+            </if>
+            <if test="periodType == 'day'">
+                AND `revi_rdate` <include refid="latestDay"/>
+            </if>
+            <if test="periodType == 'month'">
+                AND `revi_rdate` <include refid="latestMonth"/>
+            </if>
+            <if test="periodType == 'year'">
+                AND `revi_rdate` <include refid="latestYear"/>
+            </if>
+            <if test="dateStart != null and dateEnd != null">
+                AND `revi_rdate` <include refid="searchDate"/>
+            </if>
+            <if test="acc_id != null">
+                AND b.acc_id=#{acc_id};
+            </if>
+    </select>
+
+    <!-- 판매자 타임라인 -->
+    <select id="selectTimeline"  parameterType="hashmap" resultType="kr.co.Lemo.domain.ReservationVO">
+    select *
+    from `lemo_product_reservation` as a
+        inner join `lemo_product_room` as b on a.room_id=b.room_id
+        inner join `lemo_product_accommodation` as c on a.acc_id=c.acc_id
+    where
+        c.`user_id`=#{user_id}
+        <if test="cal_year == null">
+            and month(a.`res_checkIn`) = month(current_date())
+            and year(a.`res_checkIn`) = year(current_date())
+        </if>
+        <if test="acc_id != null">
+            and c.`acc_id`=#{acc_id}
+        </if>
+    </select>
+
+    <!-- 판매자 타임라인 - 모달 이벤트 -->
+    <select id="selectReservation" resultType="kr.co.Lemo.domain.ReservationVO">
+        select * from `lemo_product_reservation` as a
+            inner join `lemo_product_room` as b on a.room_id=b.room_id
+            inner join `lemo_product_accommodation` as c on a.acc_id=c.acc_id
+        where `res_no`=#{res_no};
+    </select>
+
+
+
+    <!-- 판매자 - 쿠폰 등록 -->
+    <insert id="insertCoupon" parameterType="hashMap">
+        INSERT INTO `lemo_product_coupon` (
+        `user_id`, `acc_id`, `user_role`, `cp_subject`, `cp_group`, `cp_type`,
+        `cp_rate`, `cp_disType`, `cp_price`, `cp_minimum`, `cp_maximum`,
+        `cp_start`, `cp_end`, `cp_daysAvailable`, `cp_limitedIssuance`
+        )
+        VALUES (
+        #{user_id}, #{acc_id}, 'BUSINESS', #{cp_subject}, 'NULL', 'NULL', #{cp_rate},
+        CASE
+            WHEN #{cp_rate} IS NOT NULL THEN '1'
+            WHEN #{cp_price} IS NOT NULL THEN '2'
+        ELSE NULL
+        END,
+        #{cp_price}, #{cp_minimum}, #{cp_maximum}, #{cp_start}, #{cp_end}, #{cp_daysAvailable}, #{cp_limitedIssuance}
+        );
+    </insert>
+
+    <!-- 판매자 - 숙소 등록 -->
+    <insert id="insertInfo" parameterType="hashMap" useGeneratedKeys="true" keyProperty="acc_id">
+        insert into `lemo_product_accommodation` set
+        `user_id`=#{user_id},
+        `acc_name`=#{acc_name},
+        `accType_no`=#{accType_no},
+        `province_no`=#{province_no},
+        `acc_city`=#{acc_city},
+        `acc_zip`=#{acc_zip},
+        `acc_addr`=#{acc_addr},
+        `acc_addrDetail`=#{acc_addrDetail},
+        `acc_longtitude`=#{acc_longtitude},
+        `acc_lattitude`=#{acc_lattitude},
+        `acc_xy` = ST_GeomFromText(CONCAT('POINT(', #{acc_longtitude}, ' ', #{acc_lattitude}, ')')),
+        `acc_mainInfo`=#{acc_mainInfo},
+        `acc_info`=#{acc_info},
+        `acc_comment`=#{acc_comment},
+        `acc_thumbs`=#{acc_thumbs},
+        `acc_checkIn`=#{acc_checkIn},
+        `acc_checkOut`=#{acc_checkOut},
+        `acc_season`=#{acc_season},
+        `acc_rdate`=NOW();
+    </insert>
+
+    <!-- 판매자 - 숙소 등록 (할인율) -->
+    <insert id="insertRatePolicy" parameterType="hashMap">
+        insert into `lemo_product_ratepolicy` set
+        `acc_id`=#{acc_id},
+        `rp_offSeason_weekday`=#{rp_offSeason_weekday},
+        `rp_offSeason_weekend`=#{rp_offSeason_weekend},
+        `rp_peakSeason_weekday`=#{rp_peakSeason_weekday},
+        `rp_peakSeason_weekend`=#{rp_peakSeason_weekend}
+    </insert>
+
+    <!-- 판매자 - 숙소 등록 (서비스) -->
+    <insert id="insertServiceRegInfo" parameterType="hashMap">
+        insert into `lemo_product_servicereginfo` set
+        `acc_id`=#{acc_id},
+        `sc_no`=#{sc_no}
+    </insert>
+
+     <!-- 판매자 - 객실 등록 -->
+    <insert id="insertRoom" parameterType="hashMap">
+        insert into `lemo_product_room` set
+        `acc_id` = #{acc_id},
+        `room_name` = #{room_name},
+        `room_stock` = #{room_stock},
+        `room_price` = #{room_price},
+        `room_defNum` = #{room_defNum},
+        `room_maxNum` = #{room_maxNum},
+        `room_addPrice` = #{room_addPrice},
+        `room_info` = #{room_info},
+        `room_thumb` = #{room_thumb},
+        `room_checkIn` = #{room_checkIn},
+        `room_checkOut` = #{room_checkOut}
+    </insert>
+
+    <!-- 판매자 - 예약 - 메모 입력 -->
+    <update id="updateMemoInRes">
+        update `lemo_product_reservation` set `res_memo`=#{res_memo} where `res_no`=#{res_no};
+    </update>
+
+    <!-- 판매자 - 숙소 수정 -->
+    <update id="updateInfo" parameterType="hashMap" useGeneratedKeys="true" keyProperty="acc_id">
+        update `lemo_product_accommodation` set
+        `acc_name`=#{acc_name},
+        `accType_no`=#{accType_no},
+        `province_no`=#{province_no},
+        `acc_city`=#{acc_city},
+        `acc_zip`=#{acc_zip},
+        `acc_addr`=#{acc_addr},
+        `acc_addrDetail`=#{acc_addrDetail},
+        `acc_longtitude`=#{acc_longtitude},
+        `acc_lattitude`=#{acc_lattitude},
+        `acc_xy` = ST_GeomFromText(CONCAT('POINT(', #{acc_longtitude}, ' ', #{acc_lattitude}, ')')),
+        `acc_mainInfo`=#{acc_mainInfo},
+        `acc_info`=#{acc_info},
+        `acc_comment`=#{acc_comment},
+        `acc_thumbs`=#{acc_thumbs},
+        `acc_checkIn`=#{acc_checkIn},
+        `acc_checkOut`=#{acc_checkOut},
+        `acc_season`=#{acc_season}
+         where `acc_id`=#{acc_id};
+    </update>
+
+    <!-- 판매자 - 숙소 수정 (할인율) -->
+    <update id="updateRatePolicy" parameterType="hashMap">
+        update `lemo_product_ratepolicy` set
+        `rp_offSeason_weekday`=#{rp_offSeason_weekday},
+        `rp_offSeason_weekend`=#{rp_offSeason_weekend},
+        `rp_peakSeason_weekday`=#{rp_peakSeason_weekday},
+        `rp_peakSeason_weekend`=#{rp_peakSeason_weekend}
+        where `acc_id`=#{acc_id};
+    </update>
+
+    <!-- 판매자 - 숙소 수정 (서비스) -->
+    <update id="updateServiceRegInfo"  parameterType="hashMap">
+        update `lemo_product_servicereginfo` set
+        `sc_no`=#{sc_no}
+        where `acc_id`=#{acc_id};
+    </update>
+
+
+    <!-- business - review - reply -->
+    <update id="updateReply">
+        update `lemo_product_review` set
+        `revi_reply`=#{revi_reply},
+        `revi_reply_rdate`=NOW()
+        where `revi_id`=#{revi_id};
+    </update>
+
+     <!-- 판매자 숙소 삭제  -->
+    <update id="deleteAcc">
+        update `lemo_product_accommodation` set
+        `acc_state`=2
+        where `acc_id`=#{acc_id};
+    </update>
+
+    <!-- 판매자 객실 삭제 -->
+    <update id="deleteRoom">
+        update `lemo_product_room` set
+        `room_state`=2
+        where `room_id`=#{room_id};
+    </update>
+
+    <!-- 판매자 - 숙소 수정 (기존 서비스 삭제) -->
+    <delete id="deleteServiceRegInfo" parameterType="hashMap">
+        delete from `lemo_product_servicereginfo`
+        where `acc_id`=#{acc_id};
+    </delete>
+
+    <!-- 판매자 - 쿠폰 삭제 -->
+    <delete id="deleteCoupon">
+        delete from `lemo_product_coupon` where `cp_id`=#{cp_id};
+    </delete>
+
+    <!-- business - review - delete review -->
+    <delete id="deleteReview">
+        delete from `lemo_product_review` where `revi_id`=#{revi_id};
+    </delete>
+
+
+
+<!--
+    날짜 : 2023/04/05
+    이름 : 황원진
+    내용 : 판매자 qna mapper
+-->
+
+    <!-- 판매자 상품문의 목록-->
+    <select id="selectQnaList" parameterType="kr.co.Lemo.utils.SearchCondition" resultType="kr.co.Lemo.domain.ProductQnaVO">
+        select a.*, b.`acc_name`, c.`nick` from `lemo_product_qna` as a
+        join `lemo_product_accommodation` as b on a.acc_id=b.acc_id
+        JOIN `lemo_member_userinfo` AS c ON a.user_id=c.user_id
+        where b.`user_id`= #{user_id}
+        <if test="acc_id != null">
+            and a.`acc_id`=#{acc_id}
+        </if>
+        order BY a.`qna_no` DESC LIMIT #{offset}, 10;
+    </select>
+
+    <!-- 판매자 상품문의 목록 페이징 -->
+    <select id="countQnas" parameterType="kr.co.Lemo.utils.SearchCondition" resultType="java.lang.Integer">
+        select count(*) FROM `lemo_product_qna` AS a
+        JOIN `lemo_product_accommodation` AS b
+        ON a.acc_id = b.acc_id
+        WHERE b.`user_id` = #{user_id}
+        <if test="acc_id != null">
+            and a.`acc_id`=#{acc_id}
+        </if>
+    </select>
+
+    <!-- 판매자 소유의 상품목록-->
+    <select id="selectAccOwnedForQna" resultType="kr.co.Lemo.domain.ProductQnaVO">
+        SELECT `acc_id`, `user_id`, `acc_name` from `lemo_product_accommodation`
+        where `user_id`=#{user_id};
+    </select>
+
+    <!-- 판매자 상품문의 목록 선택삭제-->
+    <delete id="deleteQnaList">
+        delete from `lemo_product_qna`
+        where `qna_no` in
+        <foreach collection="checkList" index="index" item="checkList" open="(" close=")" separator=",">
+            #{checkList}
+        </foreach>
+    </delete>
+
+    <!-- 판매자 상품문의 상세보기 -->
+    <select id="selectQnaArticle" resultType="kr.co.Lemo.domain.ProductQnaVO">
+        select a.*, b.`acc_name`, c.`nick` from `lemo_product_qna` as a
+        join `lemo_product_accommodation` as b on a.acc_id=b.acc_id
+        JOIN `lemo_member_userinfo` AS c ON a.user_id=c.user_id
+        where  a.`qna_no` = #{qan_no};
+    </select>
+
+    <!-- 판매자 상품문의 답변 등록 -->
+    <update id="updateQnaReply">
+        update `lemo_product_qna` set
+        `qna_reply`=#{qna_reply},
+        `qna_reply_date`=NOW()
+        where `qna_no` =#{qna_no};
+    </update>
+
+    <!-- 판매자 상품문의 답변 수정 -->
+    <update id="updateQnaUdate">
+        update `lemo_product_qna` set
+        `qna_reply`=#{qna_reply},
+        `qna_udate`=NOW()
+        where `qna_no` =#{qna_no};
+    </update>
+
+    <!-- 판매자 객실 수정-->
+    <update id="updateRoom">
+        UPDATE `lemo_product_room`
+        SET
+        `room_name` = #{room_name},
+        `room_stock` = #{room_stock},
+        `room_defNum` = #{room_defNum},
+        `room_maxNum` = #{room_maxNum},
+        `room_addPrice`= #{room_addPrice},
+        `room_price` = #{room_price},
+        `room_info` = #{room_info},
+        `room_thumb` = #{room_thumb},
+        `room_checkIn` = #{room_checkIn},
+        `room_checkOut` = #{room_checkOut}
+        WHERE `room_id`= #{room_id}
+    </update>
+
+    <!-- 공통 키 -->
+    <!-- include :: sql 구문 재사용 -->
+    <!-- 쿠폰 검색 -->
+    <sql id="searchCouponType">
+        <if test="searchField != null">
+            <choose>
+                <when test='searchField == "acc_id"'>
+                    and `acc_id` like CONCAT('%', #{searchWord}, '%')
+                </when>
+                <when test='searchField == "cp_subject"'>
+                    and `cp_subject` like CONCAT('%', #{searchWord}, '%')
+                </when>
+            </choose>
+        </if>
+    </sql>
+
+    <!-- 리뷰 검색 if:test name으로 -->
+    <sql id="searchAccForReview">
+        <if test="acc_id != null">
+            and b.`acc_id`=#{acc_id}
+        </if>
+    </sql>
+
+    <!-- 숙박 검색 -->
+    <sql id="searchAcc">
+        <if test="searchField != null">
+            <choose>
+                <when test='searchField == "acc_id"'>
+                   and `acc_id` like CONCAT('%', #{searchWord}, '%')
+                </when>
+                <when test='searchField == "acc_name"'>
+                   and `acc_name` like CONCAT('%', #{searchWord}, '%')
+                </when>
+            </choose>
+        </if>
+    </sql>
+
+    <!-- 객실 검색 -->
+    <sql id="searchRoom">
+        <if test="searchField != null">
+            <choose>
+                <when test='searchField == "acc_id"'>
+                   and `acc_id` like CONCAT('%', #{searchWord}, '%')
+                </when>
+                <when test='searchField == "acc_name"'>
+                   and `acc_name` like CONCAT('%', #{searchWord}, '%')
+                </when>
+                <when test='searchField == "room_id"'>
+                   and `room_id` like CONCAT('%', #{searchWord}, '%')
+                </when>
+                <when test='searchField == "room_name"'>
+                   and `room_name` like CONCAT('%', #{searchWord}, '%')
+                </when>
+            </choose>
+        </if>
+    </sql>
+
+
+
+
+
+</mapper>

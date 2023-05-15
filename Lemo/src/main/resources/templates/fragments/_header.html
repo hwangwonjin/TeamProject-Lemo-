@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<th:block th:fragment="headerFragment">
+    <header>
+        <div class="header_inner">
+            <div class="header_flex">
+                <div class="header_logo">
+                    <!-- 메인으로 이동 -->
+                    <a th:href="@{/}"><img th:src="@{/images/index/lemo_logo.png}" alt="레모 로고"></a>
+                    <a th:href="@{/}" class="logo">LEMO</a>
+                </div>
+                <div class="header_service">
+                    <th:block sec:authorize="hasRole('ROLE_ADMIN')">
+                        <a th:href="@{/admin/index}">관리자</a>
+                    </th:block>
+                    <th:block sec:authorize="hasRole('ROLE_BUSINESS')">
+                        <a th:href="@{/business/index}">관리자</a>
+                    </th:block>
+                    <th:block sec:authorize="isAuthenticated()">
+                        <form th:action="@{/user/logout}" th:method="get">
+                            <input type="submit"  class="logout" value="로그아웃"/>
+                        </form>
+                    </th:block>
+                    <a th:href="@{/user/login}" sec:authorize="!isAuthenticated()">로그인</a>
+                    <a th:href="@{/diary/list}">여행일기</a>
+                    <div class="dropdown_menu" id="dropdown_menu2">
+                        <button id="dropdown2">고객센터
+                            <img th:src="@{/images/index/down-arrow.png}">
+                        </button>
+                        <th:block sec:authorize="isAuthenticated()">
+                            <div class="dropdown_content" id="dropdown_content2">
+                        </th:block>
+                        <th:block sec:authorize="!isAuthenticated()">
+                            <div class="dropdown_content" id="dropdown_content2" style="right:-49px;">
+                        </th:block>
+                            <a th:href="@{/cs/notice}">공지사항</a>
+                            <a th:href="@{/cs/event/list}">이벤트</a>
+                            <a th:href="@{/cs/faq/event}">자주 묻는 질문</a>
+                            <a th:href="@{/cs/qna}">1:1 문의</a>
+                            <a th:href="@{/cs/terms}">약관 및 정책</a>
+                        </div>
+                    </div>
+                    <th:block sec:authorize="isAuthenticated()">
+                        <div class="dropdown_menu" id="dropdown_menu">
+                            <button id="dropdown">마이페이지
+                                <img th:src="@{/images/index/down-arrow.png}">
+                            </button>
+                            <div class="dropdown_content" id="dropdown_content">
+                                <a id="profileImg" th:href="@{/my/info}">
+                                    <img th:src="@{/img/profile/} + ${#authentication.principal.photo}" alt="프로필 사진" th:if="${#authentication.principal.photo ne null}">
+                                    <img th:src="@{/images/my/profile.png}" alt="프로필 사진" th:if="${#authentication.principal.photo eq null}">
+                                </a>
+                                <a id="profileNick">[[${#authentication.principal.nick}]]</a>
+                                <a th:href="@{/my/point}">포인트</a>
+                                <a th:href="@{/my/coupon}">쿠폰함</a>
+                                <a th:href="@{/my/reservation/list}">예약내역</a>
+                                <a th:href="@{/my/pick}">위시리스트</a>
+                                <a th:href="@{/my/diary/list}">나의 여행일기</a>
+                                <a th:href="@{/my/review/list}">나의 리뷰</a>
+                                <a th:href="@{/my/qna}">상품 문의</a>
+                            </div>
+                        </div>
+                    </th:block>
+                </div>
+                <div class="header_searchBar">
+                    <form class="search-container" th:action="@{/product/list}">
+                        <div class="search">
+                            <input id="search-box" type="text" class="search-box" name="keyword"/>
+                            <button type="submit" class="btnSearch searchplace">
+                                <input type="image" th:src="@{/images/index/btn_search.png}" id="search-submit"/>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+</th:block>
+</html>

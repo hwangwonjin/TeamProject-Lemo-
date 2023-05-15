@@ -1,0 +1,172 @@
+<!--
+    날짜 : 2023/02/28
+    이름 : 황원진
+    내용 : 마이페이지 info HTML 
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="layouts/default-layout">
+<th:block layout:fragment="css-js">
+    <link rel="stylesheet" th:href="@{/css/my/my.css}">
+</th:block>
+<th:block layout:fragment="content">
+        <main>
+            <section id="my">
+                <th:block th:replace="~{fragments/_aside::myAside}"></th:block>
+                <div class="content">
+                    <!-- 카테고리 -->
+                    <div class="tab">
+                        <span class="my_title">
+                            내정보
+                        </span>
+                    </div>
+                    <div class="my_info">
+                        <div class="my_page">
+                            <div class="top_area">
+                                <div class="login_info">
+                                    <form name="profile">
+                                        <div class="my_profile_box">
+                                            <img id="my_profile" th:src="@{/img/profile/} + ${#authentication.principal.photo}" alt="포로필 사진1" th:if="${#authentication.principal.photo ne null}">
+                                            <img id="my_profile" th:src="@{/images/my/profile.png}" alt="포로필 사진2" th:if="${#authentication.principal.photo eq null}">
+                                        </div>
+                                        <label for="profile_file">+</label>
+                                        <input type="file" name="profileFile" id="profile_file" accept="image/png, image/jpeg" onchange="readURL(this);">
+                                        <button type="button" class="btn_edit profileBtn del"
+                                                th:classappend="${#authentication.principal.photo ne null? 'active':''}"
+                                                th:disabled="${#authentication.principal.photo eq null? 'true':'false'}">
+                                            <span class="text">삭제</span>
+                                        </button>
+                                        <button type="button" class="btn_edit profileBtn mod" disabled>
+                                            <span class="text">수정</span>
+                                        </button>
+                                    </form>
+                                    <div class="social_login" th:if="${#authentication.principal.type eq 2}">
+                                        <p>[[${#authentication.principal.soci_type}]] 회원으로 로그인</p>
+                                    </div>
+                                </div>
+                                <ul class="my_data">
+                                    <li>
+                                        <div class="info_nick">
+                                            <div>
+                                                <span class="nick_text">[[${#authentication.principal.nick}]]</span>
+                                                <th:block th:if="${#authentication.principal.level eq 2}">
+                                                    <i id="user_level">엘리트회원</i>
+                                                </th:block>
+                                                <th:block th:unless="${#authentication.principal.level eq 2}">
+                                                    <i id="user_level" class="general">일반회원</i>
+                                                </th:block>
+                                                <button type="button" class="btn_edit nick">
+                                                    <span class="text">수정</span>
+                                                </button>
+
+                                            </div>
+                                            <section id="section1">
+                                                <div class="inp_type2 form-errors">
+                                                    <input type="text" class="mod_nick" maxlength="8"/>
+                                                    <button type="button" class="btn_common nickChangeBtn active">딴거할래요</button>
+                                                    <label id="nick_msg" class="validate_msg"></label>
+                                                    <button type="button" id="nickModReg" class="btn_common nick mod" disabled>수정완료</button>
+                                                    <button type="button" id="nickModCan" class="btn_common nick mod">수정취소</button>
+
+                                                </div>
+                                            </section>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="info_phone">
+                                            <div>
+                                                <span id="phoneNum" class="phone_text">[[${#authentication.principal.hp}]]</span>
+                                                <button type="button" class="btn_edit">
+                                                    <span class="text">수정</span>
+                                                </button>
+                                            </div>
+                                            <section id="section2">
+                                                <div class="inp_type2 form-errors">
+                                                    <input type="tel" name="hp" class="mod_hp" maxlength="11" placeholder="휴대폰 번호를 입력해주세요."/>
+                                                    <button type="button" class="btn_common" id="sendCodeBtn">전송</button>
+                                                    <label id="hp_result" class="validate_msg"></label>
+                                                </div>
+                                                    <button type="button" id="hpModReg" class="btn_common hp mod" disabled>수정완료</button>
+                                                    <button type="button" id="hpModCan" class="btn_common hp mod">수정취소</button>
+                                            </section>
+                                        </div>
+                                    </li>
+                                    <div class="on-off-toggle">
+                                        <input class="on-off-toggle__input" type="checkbox" id="bopis" th:checked="${#authentication.principal.isNoticeEnabled eq 1}"/>
+                                        <label for="bopis" class="on-off-toggle__slider"></label>
+                                    </div>
+                                    <div class="my_marketing">마켓팅 수신 동의</div>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="bot_btn">
+                            <p>LEMO를 이용하고 싶지 않으신가요?</p>
+                            <button type="button">
+                                <a class="withdraw" th:href="@{/my/withdraw}">회원탈퇴</a>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        <div class="modal__overlay">
+            <div class="modal">
+                <h2 class="title">회원등급 안내</h2>
+                <button id="modal_close"></button>
+                <section class="sec1">
+                        <h3 class="sub_title"><b>[[${#authentication.principal.nick}]]</b>님의 회원등급</h3>
+                    <th:block th:if="${#authentication.principal.level eq 2}">
+                        <h3 class="level_title elite">엘리트</h3>
+                    </th:block>
+                    <th:block th:unless="${#authentication.principal.level eq 2}">
+                        <h3 class="level_title general">일반</h3>
+                        <div class="level_content">
+                            <p>앞으로 <b id="res_cnt">3회</b> 숙박완료를 하시면 <b>엘리트</b>등급으로 승급됩니다.</p>
+                        </div>
+                    </th:block>
+                </section>
+                <section class="sec2">
+                    <h3 class="sub_title">엘리트 등급 안내</h3>
+                    <ul>
+                        <li><div>기준 : 숙박완료 &nbsp;<b>10회</b>이상 </div></li>
+                        <li><div>혜택 : 실결제 금액의&nbsp;<b>3%</b> 포인트 적립</div></li>
+                    </ul>
+                </section>
+                <section class="sec3">
+                    <ul>
+                        <li><p>회원등급은 매일 자정 숙박완료 실적이 집계되어 변경됩니다.</p></li>
+                        <li><p>회원등급 기준 및 혜택은 LEMO 운영 정책에 따라 변경될 수 있습니다.</p></li>
+                        <li><p>혜택은 숙박완료시 적립되며, 상품 실제 결제금액 = 상품금액 - 상품 할인금액 - 쿠폰 할인금액 - 포인트 사용금액.</p></li>
+                    </ul>
+                </section>
+            </div>
+        </div>
+</th:block>
+<th:block layout:fragment="script">
+    <script th:src="@{/js/my/info.js}"></script>
+    <script>
+        const principalNick = "[[${#authentication.principal.nick}]]";
+        const user_level = "[[${#authentication.principal.level}]]";
+
+        $(function(){
+            $("#user_level").click(function() {
+                if(user_level == 1){
+                    ajaxAPI("my/reservation-cnt", null,"get").then((response) => {
+                        const count = 10 - Number(response.count);
+                        $('#res_cnt').text(count + "회");
+                    }).catch((errorMsg) => {
+                        console.log(errorMsg)
+                    });
+                }
+
+                $('.modal__overlay').show();
+            })
+            $('#modal_close').click(function() {
+                $('.modal__overlay').hide();
+            })
+        })
+    </script>
+</th:block>
+</html>
+

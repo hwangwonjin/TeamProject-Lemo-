@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/admin-layout}">
+<th:block layout:fragment="css-js">
+    <link rel="stylesheet" th:href="@{/css/admin/adminEvent.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/adminCommon.css}">
+</th:block>
+<th:block layout:fragment="content">
+    <main>
+        <div class="main_inner">
+            <!-- 죄측 사이드바 -->
+            <th:block th:replace="~{fragments/_aside::adminFragment}"></th:block>
+            <!-- 우측 메인 컨테이너 -->
+            <section class="main_content">
+                <div class="main_cotent_inner">
+                    <div class="main_content_div">
+                        <div class="col_nav">
+                            <span>고객센터 ></span>
+                            <span>이벤트 보기</span>
+                        </div>
+
+                        <!-- 이벤트 보기 폼 -->
+                        <div class="col_register_form">
+                            <input type="hidden" id="page" value="${page}">
+                            <!-- 이벤트 제목, 내용 -->
+                            <div class="col_register1">
+                                <div class="stayName">
+                                    <div>
+                                        <span>[[${event.cs_title}]]</span>
+                                    </div>
+                                </div>
+                                <div class="event_view">
+                                    <div class="event_content">
+                                        <p th:each="img, i : ${#strings.arraySplit(event.cs_eventViewImg, '/')}">
+                                            <img th:src="@{/img/cs/{csNo}/{imageName}(csNo=${event.cs_no}, imageName=${img})}" />
+                                        </p>
+
+                                    </div>
+                                    <div class="precautions">
+                                        <div class="handle">
+                                            <div>
+                                                <img th:src="@{/images/admin/info_blit.png}">
+                                                <span>꼭 확인하세요.</span>
+                                                <img th:src="@{/images/admin/arrow_top.png}">
+                                            </div>
+                                        </div>
+                                        <div class="info" th:utext="${event.cs_content}">
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 버튼 -->
+                            <div class="btnAdminProd">
+                                <a th:href="@{/admin/cs/event/modify (cs_no=${event.cs_no}, page=${page})}">
+                                    이벤트수정
+                                </a>
+                            </div>
+                            <div class="btnAdminProd">
+                                <a th:href='@{/admin/cs/event/list (page=${page})}'>
+                                    이벤트목록
+                                </a>
+                            </div>
+                            <div class="btnAdminProd">
+                                <a class="btnEventDelete" th:data-no="${event.cs_no}">
+                                    이벤트삭제
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="blank30"></div>
+                </div>
+            </section>
+        </div>
+    </main>
+    <th:block th:replace="~{fragments/_footer::footerFragment}"></th:block>
+</th:block>
+<th:block layout:fragment="script">
+    <script>
+        $( document ).ready( function() {
+            $('.handle').click(function(){
+                $('.info').slideToggle();
+                $(this).find('img:last-of-type').toggleClass('on');
+            });
+
+
+            // event 삭제
+            $('.btnEventDelete').click(function(e){
+                e.preventDefault();
+
+                Swal.fire({
+                    title: '해당 글을 삭제하시겠습니까?',
+                    icon: 'question',
+
+                    showCancelButton: true, // cancel버튼 보이기. 기본은 원래 없음
+                    confirmButtonColor: '#3085d6', // confrim 버튼 색깔 지정
+                    cancelButtonColor: '#d33', // cancel 버튼 색깔 지정
+                    confirmButtonText: '확인', // confirm 버튼 텍스트 지정
+                    cancelButtonText: '취소', // cancel 버튼 텍스트 지정
+
+                    reverseButtons: false,
+                }).then(result => {
+                    if(result.isConfirmed){
+                        let cs_no = $(this).attr('data-no');
+
+                        console.log('cs_no ajax : ' + cs_no);
+
+                        const jsonData = {"cs_no": cs_no};
+
+                        ajaxAPI("admin/cs/event/article", jsonData, "delete").then((response) => {
+                            if(response.result > 0) {
+                                 Swal.fire({
+                                        title : '글이 삭제되었습니다.',
+                                        icon : 'success',
+                                        confirmButtonText : '확인'
+                                    }).then(function(){
+                                        location.replace("/Lemo/admin/cs/event/list");
+                                    });
+                            }else {
+                                alert('error');
+                            }
+                        }).catch((errMsg) => {
+                            console.log(errorMsg);
+                        });
+                    }
+                });
+
+            });
+        });
+    </script>
+</th:block>
+</html>

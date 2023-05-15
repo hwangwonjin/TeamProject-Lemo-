@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="layouts/default-layout">
+<th:block layout:fragment="css-js">
+    <link rel="stylesheet" th:href="@{/css/cs/cs.css}">
+</th:block>
+<th:block layout:fragment="content">
+    <!-- 메인 -->
+    <main>
+        <section id="cs">
+            <!-- nav-->
+            <th:block th:replace="fragments/_aside::csAside"></th:block>
+            <!-- 본문 -->
+            <div class="content">
+                <!-- 카테고리 -->
+                <div class="tab">
+                    <span class="event_title">
+                        이벤트 <span class="new">NEW</span>
+                    </span>
+                </div>
+                <!-- view 내용 -->
+                <div class="event_view">
+                    <span></span>
+                    <div class="event_content">
+                        <p th:each="img, i : ${#strings.arraySplit(eventArticle.cs_eventViewImg, '/')}">
+                            <img th:src="@{/img/cs/{csNo}/{imageName}(csNo=${eventArticle.cs_no}, imageName=${img})}" />
+                        </p>
+                    </div>
+                    <div class="precautions">
+                        <div class="handle">
+                            <div>
+                                <img th:src="@{/images/cs/info_blit.png}">
+                                <span>꼭 확인하세요.</span>
+                                <img th:src="@{/images/cs/arrow_top.png}">
+                            </div>
+                        </div>
+                        <div class="info" th:utext="${eventArticle.cs_content}">
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 페이징 -->
+                <div class="page">
+                    <th:bolck th:if="${eventPrev == null}">
+                        <p>
+                            <a>
+                                <span class="ico_arr_up">이전글</span>
+                                <b>이전글이 없습니다</b>
+                                <em></em>
+                            </a>
+                        </p>
+                    </th:bolck>
+
+                    <th:bolck th:if="${eventPrev != null} and ${eventPrev.cs_eventBannerState == 1}">
+                    <p>
+                        <a th:href="@{/cs/event/view (cs_cate=${eventPrev.cs_cate}, cs_no=${eventPrev.cs_no})}">
+                            <span class="ico_arr_up">이전글</span>
+                            <b>[[${eventPrev.cs_title}]]</b>
+                            <em>기간 : [[${eventPrev.cs_eventStart}]] ~ [[${eventPrev.cs_eventEnd}]]</em>
+                        </a>
+                    </p>
+                    </th:bolck>
+
+
+                    <th:bolck th:if="${eventNext == null}">
+                        <p>
+                            <a>
+                                <span class="ico_arr_down">다음글</span>
+                                <b>다음글이 없습니다</b>
+                                <em></em>
+                            </a>
+                        </p>
+                    </th:bolck>
+
+                    <th:bolck th:if="${eventNext != null} and ${eventNext.cs_eventBannerState == 1}">
+                        <p>
+                            <a th:href="@{/cs/event/view (cs_cate=${eventNext.cs_cate}, cs_no=${eventNext.cs_no})}">
+                                <span class="ico_arr_down">다음글</span>
+                                <b>[[${eventNext.cs_title}]]</b>
+                                <em>기간 : [[${eventNext.cs_eventStart}]] ~ [[${eventNext.cs_eventEnd}]]</em>
+                            </a>
+                        </p>
+                    </th:bolck>
+
+
+
+                </div>
+                <div class="aligncenter">
+                    <button onclick="window.location.href='/Lemo/cs/event/list'" class="btn">목록보기</button>
+                </div>
+            </div>
+        </section>
+    </main>
+</th:block>
+
+<th:block layout:fragment="script">
+    <script>
+            $(document).ready(function() {
+                $('.handle').click(function(){
+                    $('.info').slideToggle();
+                    $(this).find('img:last-of-type').toggleClass('on');
+                });
+            });
+        </script>
+</th:block>
+</html>

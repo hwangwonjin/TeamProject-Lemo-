@@ -1,0 +1,87 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<div class="score_top" th:if="${reviews.size > 0}">
+    <strong th:if="${reviews.get(0).acc_rate >=5}">최고에요</strong>
+    <strong th:if="${reviews.get(0).acc_rate >=4 && reviews.get(0).acc_rate < 5}">추천해요</strong>
+    <strong th:if="${reviews.get(0).acc_rate >=3 && reviews.get(0).acc_rate < 4}">좋아요</strong>
+    <strong th:if="${reviews.get(0).acc_rate < 3}">괜찮아요</strong>
+    <div class="score_wrap">
+        <div th:class="'score_star rating'+${reviews.get(0).acc_rate}">-</div>
+        <div class="num">[[${reviews.get(0).acc_rate}]]</div>
+    </div>
+    <p>
+        전체 리뷰
+        <b> [[${ph.totalCnt}]]</b>
+        <span>|</span>
+        제휴점 답변
+        <b>[[${totalReplies}]]</b>
+    </p>
+</div>
+<ul>
+    <li th:each="review : ${reviews}">
+        <div class="guest">
+            <p class="pic">
+                <img th:src="|@{/}img/profile/${review.photo}|" th:if="${review.photo != null}">
+                <img th:src="@{/images/my/profile.png}" th:if="${review.photo == null}">
+            </p>
+<!--            <span class="best_review"></span>-->
+            <strong>[[${review.revi_title}]]</strong>
+            <div class="score_wrap_sm">
+                <div th:class="'score_star rating'+${review.revi_rate}"></div>
+                <div class="num"></div>
+            </div>
+            <div class="name">
+                <b>[[${review.room_name}]]</b>
+            </div>
+            <div class="txt">
+                [[${review.revi_content}]]
+            </div>
+            <div class="gallery_re" th:if="${review.revi_thumb != null && review.revi_thumb !=''}">
+                <div class="gallerySlider">
+                    <div th:each="img, i : ${#strings.arraySplit(review.revi_thumb, '/')}">
+                        <img th:src="|@{/}img/review/${review.res_no}/${img}|">
+                    </div>
+                </div>
+            </div>
+            <span class="date">[[${review.res_checkIn}]] 방문</span>
+        </div>
+        <div class="boss" th:if="${review.revi_reply != null}">
+            <p class="pic">
+                <img th:src="|@{/}img/profile/${business.photo}|" th:if="${business.photo != null}">
+                <img th:src="@{/images/my/profile.png}" th:if="${business.photo == null}">
+            </p>
+            <strong>제휴점 답변</strong>
+            <div class="txt">
+                [[${review.revi_reply}]]
+            </div>
+            <span class="date">[[${review.revi_dateBF}]]</span>
+        </div>
+    </li>
+</ul>
+<div class="score_top" th:if="${reviews.size == 0}">
+    <strong>등록된 리뷰가 없습니다.</strong>
+    <div class="score_wrap">
+        <div class="score_star rating}">-</div>
+        <div class="num"></div>
+    </div>
+    <p>
+        전체 리뷰
+        <b>0</b>
+        <span>|</span>
+        제휴점 답변
+        <b>0</b>
+    </p>
+</div>
+
+
+<div class="paging" th:object="${ph}" th:if="${reviews.size() > 0}">
+    <span class="prev" th:if="*{showPrev}">
+        <a th:href="@{/product/detail-review} + ${ph.sc.getQueryString(ph.beginPage-1)}" onclick="movePage(event,this,'review')"></a>
+    </span>
+    <span class="on" th:each="num:${#numbers.sequence(ph.beginPage, ph.endPage)}" th:class="${num == ph.sc.page} ? 'on':'off'">
+        <a th:href="@{/product/detail-review} + ${ph.sc.getQueryString(num)}" onclick="movePage(event,this,'review')">[[${num}]]</a>
+    </span>
+    <span class="next" th:if="*{showNext}">
+        <a th:href="@{/product/detail-review} + ${ph.sc.getQueryString(ph.endPage+1)}" onclick="movePage(event,this,'review')"></a>
+    </span>
+</div>
+</html>

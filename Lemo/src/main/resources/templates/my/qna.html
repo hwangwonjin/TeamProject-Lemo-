@@ -1,0 +1,171 @@
+<!--
+    날짜 : 2023/04/05
+    이름 : 박종협
+    내용 : 마이페이지 qna
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="layouts/default-layout">
+<th:block layout:fragment="css-js">
+    <link rel="stylesheet" th:href="@{/css/my/my.css}">
+
+</th:block>
+<th:block layout:fragment="content">
+            <main>
+                <section id="my">
+                    <th:block th:replace="~{fragments/_aside::myAside}"></th:block>
+                    <div class="content">
+                        <!-- 카테고리 -->
+                        <div class="tab">
+                            <span class="my_title">
+                                숙박 문의
+                            </span>
+                        </div>
+                        <div class="my_qna">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th><input type="checkbox" class="check-qna-All"></th>
+                                        <th>문의번호</th>
+                                        <th>답변상태</th>
+                                        <th>숙소 이름</th>
+                                        <th>제목</th>
+                                        <th>등록일</th>
+                                    </tr>
+                                </thead>
+                                <tbody th:each="cs:${cses}" th:if="${cses.size > 0}">
+                                    <tr>
+                                        <td><input type="checkbox" class="check-qna" th:attr="data-no=${cs.qna_no}"></td>
+                                        <td class="no">[[${cs.qna_no}]]</td>
+                                        <td class="status">
+                                            <span class="notAnswerYet" th:if="${cs.qna_reply == null}" style="color:#E84545;">검토중</span>
+                                            <span class="notAnswerYet" th:if="${cs.qna_reply != null}" style="color:#00bbfe;">답변완료</span>
+                                        </td>
+                                        <td><a th:href="@{/product/view?acc_id=}+${cs.acc_id}">[[${cs.acc_name}]]</a></td>
+                                        <td class="tit"><a href="javascript:void(0);" th:onclick="popupAnswer([[${cs.qna_no}]])">[[${cs.qna_title}]]</a></td>
+                                        <td class="date">[[${cs.qna_rdate.substring(0,10)}]]</td>
+                                    </tr>
+                                    <tr class="answer" th:id="answer+${cs.qna_no}">
+                                        <td colspan="6">
+                                            <div class="qt">
+                                                <span class="ic_qt">Q</span>
+                                                [[${cs.qna_content}]]
+                                            </div>
+                                            <div class="as" th:if="${cs.qna_reply != null}">
+                                                <span class="ic_as">A</span>
+                                                [[${cs.qna_reply}]]
+                                            </div>
+                                            <p class="reginfo" th:if="${cs.qna_reply != null}">
+                                                <span class="wh">판매자의 답변</span>
+                                                <span class="date">
+                                                    등록일 :
+                                                    <em>[[${cs.qna_reply_date}]]</em>
+                                                </span>
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tbody th:if="${cses.size == 0}">
+                                    <tr>
+                                        <td colspan="6">작성한 문의글이 존재하지 않습니다.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- 삭제버튼 -->
+                        <button class="commonBtn btnRemoveQna" type="button">선택 삭제</button>
+                        <!-- 페이징 -->
+                        <div class="paging" th:object="${ph}" th:unless="${cses.size() == 0}">
+                            <span th:if="*{showPrev}" class="prev">
+                                <a th:href="@{/my/qna} + ${ph.sc.getQueryString(ph.beginPage-1)}"></a>
+                            </span>
+                            <span th:each="num:${#numbers.sequence(ph.beginPage, ph.endPage)}" th:class="${num == ph.sc.page} ? 'on':'off'">
+                                <a th:href="@{/my/qna} + ${ph.sc.getQueryString(num)}"> [[${num}]] </a>
+                            </span>
+                            <span th:if="*{showNext}" class="next">
+                                <a th:href="@{/my/qna} + ${ph.sc.getQueryString(ph.endPage+1)}"></a>
+                            </span>
+                        </div>
+                    </div>  
+                </section>
+            </main>
+    </th:block>
+    <th:block layout:fragment="script">
+        <script>
+            function popupAnswer(no) {
+                let status = $('#answer'+no).hasClass('on');
+
+                if(status) {
+                    $('#answer'+no).css('display', 'none');
+                    $('#answer'+no).removeClass('on');
+                }else {
+                    $('#answer'+no).css('display', 'table-row');
+                    $('#answer'+no).addClass('on');
+                }
+            }
+
+            $(function(){
+                // 체크 박스 관련 변수
+                const chkList = [];
+
+                // 전체 선택, 전체 해제
+                $('.check-qna-All').click(function(){
+                    let checked = $(this).prop('checked');
+                    $('.check-qna').prop('checked', checked);
+                });
+
+                // 개별 체크박스 변경 시 전체선택 체크박스 선택 상태 변경
+                $('.check-qna').change(function() {
+                  if($('.check-qna:checked').length == $('.check-qna').length) {
+                    $('.check-qna-All').prop('checked', true);
+                  } else {
+                    $('.check-qna-All').prop('checked', false);
+                  }
+                });
+
+                // 선택한 문의글 삭제
+                $('.btnRemoveQna').click(function(){
+
+                    $('.check-qna:checked').each(function(){
+                        chkList.push($(this).attr("data-no"));
+                    });
+
+                    if(chkList.length == 0){
+                        sweetalert("선택된 문의글이 없습니다!","warning");
+                        return false;
+                    }
+
+                    Swal.fire({
+                        title: '선택하신 문의글을\n 삭제하시겠습니까?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: '확인',
+                        cancelButtonText: '취소',
+                        reverseButtons: false,
+                    }).then(result => {
+                        if (result.isConfirmed) {
+                            if(chkList.length > 0) {
+                                let jsonData = {
+                                    "chkList" : chkList
+                                };
+
+                                ajaxAPI("my/qna", jsonData, "DELETE").then((response)=>{
+                                    if(response.result > 0){
+                                        location.reload(true);
+                                    }else{
+                                        sweetalert("선택한 문의글을 삭제하지 못하였습니다.\n잠시 후 다시 시도해 주세요.","error");
+                                    }
+                                })
+                            }
+                        }
+                    });
+
+                });
+            })
+
+        </script>
+    </th:block>
+</html>

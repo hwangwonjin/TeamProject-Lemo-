@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/admin-layout}">
+<th:block layout:fragment="css-js">
+    <link rel="stylesheet" th:href="@{/css/admin/adminEvent.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/adminCommon.css}">
+
+    <!-- 드래그앤드롭 파일 업로드 -->
+    <script src="https://rawgit.com/enyo/dropzone/master/dist/dropzone.js"></script>
+    <link rel="stylesheet" href="https://rawgit.com/enyo/dropzone/master/dist/dropzone.css">
+
+    <!-- summernote -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <!-- include summernote css/js -->
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.js"></script>
+    <script th:src="@{/js/admin/summernote-ko-KR.js}"></script>
+    <style>
+
+    </style>
+</th:block>
+<th:block layout:fragment="content">
+    <main>
+        <div class="main_inner">
+            <!-- 죄측 사이드바 -->
+            <th:block th:replace="~{fragments/_aside::adminFragment}"></th:block>
+            <!-- 우측 메인 컨테이너 -->
+            <section class="main_content">
+                <input type="hidden" name="page" th:value="${page}">
+                <div class="main_cotent_inner">
+                    <div class="main_content_div">
+                        <div class="col_nav">
+                            <span>고객센터 ></span>
+                            <span>이벤트 수정</span>
+                        </div>
+
+                        <!-- 이벤트 등록 폼 -->
+                        <form class="col_register_form" th:action="@{/admin/cs/event/write}" method="post" enctype="multipart/form-data">
+
+                            <!-- 이벤트 정보 -->
+                            <div class="col_register1">
+                                <div class="stayName">
+                                    <div>
+                                        <span>이벤트 정보</span>
+                                    </div>
+                                </div>
+                                <table class="input_stayRoomInfo">
+                                    <tr>
+                                        <td>이벤트 이름</td>
+                                        <td><input type="text" name="cs_title" id="cs_title" placeholder="이벤트 제목을 작성해 주세요" required th:value="${mEvent.cs_title}"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>기간</td>
+                                        <td>
+                                            <input class="input_130" type="date" name="cs_eventStart" id="currentDate" th:value="${mEvent.cs_eventStart}" onchange="CharacterData(event)">
+                                            &nbsp;~&nbsp;
+                                            <input class="input_130" type="date" name="cs_eventEnd" id="endDate" th:value="${mEvent.cs_eventEnd}">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>메인배너 이미지</td>
+                                        <td>
+                                            <span>* 해당 이미지는 메인 페이지 내 적용되는 배너 이미지입니다. 이미지 크기는 가로 1100px 세로 440px입니다</span>
+                                            <div class="stayThumb">
+                                                <div id="fileDropzone1">
+                                                    <div class="event_write_mainImg">
+                                                        <img id="mainImage"  th:src="@{/img/cs/{cs_no}/{cs_eventMainBannerImg}(cs_no=${mEvent.cs_no}, cs_eventMainBannerImg=${mEvent.cs_eventMainBannerImg})}">
+                                                    </div>
+                                                    <input type="file" name="eventMainImg[]" id="main_file" accept="image/png, image/jpeg" class="insertFile" onchange="readURL(this);" required/>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>배너 이미지</td>
+                                        <td>
+                                            <span>* 해당 이미지는 이벤트 페이지 내 적용되는 배너 이미지입니다. 이미지 크기는 가로 800px이상 1100px이하 세로 200px 이상 300px 이하 입니다</span>
+                                            <div class="stayThumb">
+                                                <div id="fileDropzone">
+                                                    <div class="event_write_bannerImg">
+                                                        <img id="image"  th:src="@{/img/cs/{cs_no}/{cs_eventBannerImg}(cs_no=${mEvent.cs_no}, cs_eventBannerImg=${mEvent.cs_eventbannerImg})}">
+                                                    </div>
+                                                    <input type="file" name="eventbannerImg[]" id="ex_file" accept="image/png, image/jpeg" class="insertFile" onchange="bannerReadURL(this)" required/>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>이벤트 이미지</td>
+                                        <td>
+                                            <div class="stayThumb">
+                                                <div class="dropzone" name="cs_eventViewImg" id="fileDropzone2">
+                                                    <div>
+                                                        <button class="dz-default dz-message" type="button">
+                                                            사진을 첨부하려면 클릭해주세요
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>이벤트 내용</td>
+                                        <td>
+                                            <textarea id="summernote" name="cs_content" placeholder="이벤트 내용을 작성해 주세요" required th:utext="${mEvent.cs_content}"></textarea>
+                                        </td>
+                                    </tr>
+
+                                </table>
+                            </div>
+                            <div class="btnAdminProd">
+                                <a type="submit" id="btnModify">
+                                    이벤트수정
+                                </a>
+                            </div>
+                            <div class="btnAdminProd">
+                                <a th:href="@{/admin/cs/event/view (cs_no=${mEvent.cs_no}, page=${page})}">
+                                    취소
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="blank30"></div>
+                </div>
+            </section>
+        </div>
+    </main>
+    <th:block th:replace="~{fragments/_footer::footerFragment}"></th:block>
+</th:block>
+<th:block layout:fragment="script">
+    <script th:src="@{/js/admin/event_modify.js}"></script>
+    <script th:inline="javascript">
+        let viewThumbs = [[${mEvent.cs_eventViewImg}]];  // dropzone 이미지
+        let cs_no = [[${mEvent.cs_no}]];
+        let page = [[${page}]];
+        const fileMap = new Map();
+
+        let main = [[${mEvent.cs_eventMainBannerImg}]];
+        let event = [[${mEvent.cs_eventbannerImg}]];
+
+        let mainImgType = main.substring(main.length-4);
+        let bannerImgType = event.substring(event.length-4);
+
+        let cs_eventMainBannerImg = '/Lemo/img/cs/'+cs_no+'/' + [[${mEvent.cs_eventMainBannerImg}]];
+        let cs_eventbannerImg = '/Lemo/img/cs/'+cs_no+'/' + [[${mEvent.cs_eventbannerImg}]];
+
+        console.log(mainImgType)
+        console.log(bannerImgType)
+        console.log(cs_eventMainBannerImg)
+        console.log(cs_eventbannerImg)
+
+        // formData 생성
+        let usaveFormData = new FormData();
+
+        let mainOriFile;
+        let bannerOriFile;
+        let chkMainOriFile;
+        let chkBannerOriFile;
+
+
+        // imgSrc로 bsse64를 생성하고 base64로 파일을 생성한 다음 formdata에 append
+        toDataURL(cs_eventMainBannerImg).then(dataUrl => {
+            mainOriFile = base64toFile(dataUrl, 'main'+mainImgType);
+            console.log(mainOriFile)
+        });
+
+        toDataURL(cs_eventbannerImg).then(dataUrl => {
+            bannerOriFile = base64toFile(dataUrl, 'eventBanner'+bannerImgType);
+            console.log(bannerOriFile)
+            console.log('eventBanner'+bannerImgType)
+        });
+
+        console.log(fileMap);
+
+        let mainBannerFile; // 메인베너 파일
+        const mainBannerImg = $('#mainImage'); // 메인베너 이미지
+        let eventBannerFile ; // 이벤트베너 파일
+        const eventBannerImg = $('#image'); // 이벤트베너 이미지
+
+        $(document).ready(function() {
+                $('#summernote').summernote({
+                    height: 450,
+                    focus: true,
+                    lang : 'ko-KR',
+                    spellCheck: false,
+                    disableDragAndDrop: true,
+                    toolbar: [
+                        // [groupName, [list of button]]
+                        ['style', ['bold', 'italic', 'underline', 'clear']],
+                        ['font', ['strikethrough']],
+                        ['fontsize', ['fontsize']],
+                        ['color', ['color']],
+                        ['para', ['ul', 'ol', 'paragraph']],
+                        ['insert', ['table','hr']]
+                    ]
+                });
+                $('#summernote').summernote('fontSize', 14);
+            });
+
+            /** 날짜 계산**/
+
+            /* 시작 날짜 */
+            console.log("date : " + document.getElementById('currentDate').value);
+            var today = new Date().toISOString().substring(0, 10);
+            document.getElementById('currentDate').setAttribute("min", today);
+
+            /* 종료 날짜 */
+            var endday = new Date().toISOString().substring(0, 10);
+            document.getElementById('endDate').setAttribute("min", endday);
+
+            function CharacterData(e){
+                var endDay = e.target.value;
+                document.getElementById('endDate').setAttribute("min", endDay);
+            }
+
+            $('.col_register_form').submit(function(e){
+                e.preventDefault();
+            });
+
+            $(document).ready(function() {
+                /** 메인이미지 미리보기 **/
+                const mainDOM = document.querySelector('#main_file');
+                const preview = document.querySelector('#mainImage');
+
+
+                preview.addEventListener('click', () => {
+                    $('input#main_file').click();
+                });
+
+                 $('#main_zone').on('click', function() {
+                    $('input#main_file').click();
+                });
+
+
+                /** 베너이미지 미리보기 **/
+                const fileDOM = document.querySelector('#ex_file');
+                const previews = document.querySelector('#image');
+
+                previews.addEventListener('click', () => {
+                    $('input#ex_file').click();
+                });
+
+                $('#att_zone').on('click', function() {
+                    $('input#ex_file').click();
+                });
+
+                // 타이틀 포커스
+                const cs_title = document.getElementById('cs_title');
+                cs_title.focus();
+
+
+                // 서정현
+                // mainBannerFile 변수에 들어있는 값 확인 버튼
+                $('#checking').on('click', function (){
+                    console.log(mainBannerFile);
+                });
+
+            });
+
+            // 서정현
+            function readURL(input) {
+
+                const fileName = input.value;
+                const fileDot = fileName.lastIndexOf(".");
+                const fileType = fileName.substring(fileDot+1, fileName.length).toLowerCase();
+
+                if (input.files && input.files[0]) {
+                    if(fileType !== "jpg" && fileType !== "png" && fileType !== "jpeg"){
+                        Swal.fire({
+                            title : "파일형식은 JPG, PNG, JPEG만\n 가능합니다.",
+                            icon : 'warning',
+                            confirmButtonText : '확인'
+                        })
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.readAsDataURL(input.files[0]);
+                    reader.onload = function(e) {
+                        const image = new Image();
+                        image.src = e.target.result;
+                        image.onload = function() {
+                            if (image.width != 1100 || image.height != 440) {
+                                Swal.fire({
+                                    title : '이미지 크기가 올바르지 않습니다.',
+                                    text : '가로는 1100px, 세로는 440px로 맞춰주세요.',
+                                    icon : 'warning',
+                                    confirmButtonText : '확인'
+                                })
+                            } else {
+                                console.log("start...");
+                                console.log(e.target.result)
+                                usaveFormData.delete('main'+mainImgType);
+                                chkMainOriFile = base64toFile(e.target.result, 'main'+mainImgType);
+                                console.log("메인베너");
+                                mainBannerImg.attr('src', e.target.result);
+                                mainBannerImg.show();
+                                $('#main_zone').hide();
+                                mainBannerFile = input.files[0];
+                                console.log("메인베너 수정완료");
+                            }
+                        }
+                    };
+
+                }
+            }
+
+
+
+            // 이벤트 베너
+            // 이미지 크기 검증
+             function bannerReadURL(input) {
+
+                const fileName = input.value;
+                const fileDot = fileName.lastIndexOf(".");
+                const fileType = fileName.substring(fileDot+1, fileName.length).toLowerCase();
+
+                if (input.files && input.files[0]) {
+                    if(fileType !== "jpg" && fileType !== "png" && fileType !== "jpeg"){
+                        Swal.fire({
+                            title : "파일형식은 JPG, PNG, JPEG만\n 가능합니다.",
+                            icon : 'warning',
+                            confirmButtonText : '확인'
+                        })
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.readAsDataURL(input.files[0]);
+                    reader.onload = function(e) {
+                        const image = new Image();
+                        image.src = e.target.result;
+                        image.onload = function() {
+                            if (image.width < 1000 || image.height > 300 || image.height < 200) {
+                                Swal.fire({
+                                    title : '이미지 크기가 올바르지 않습니다.',
+                                    text : '가로는 1000px 이상, 세로는 200px 이상, 300px 이하로 맞춰주세요.',
+                                    icon : 'warning',
+                                    confirmButtonText : '확인'
+                                })
+                            } else {
+                                console.log("start...");
+                                usaveFormData.delete('eventBanner'+bannerImgType);
+                                chkBannerOriFile = base64toFile(e.target.result, 'eventBanner'+bannerImgType);
+                                console.log('eventBanner'+bannerImgType)
+                                console.log('이벤트베너 확인')
+                                eventBannerImg.attr('src', e.target.result);
+                                console.log(e.target.result)
+                                eventBannerImg.show();
+                                $('#att_zone').hide();
+                                eventBannerFile = input.files[0];
+                            }
+                        }
+                    };
+
+                }
+            }
+
+
+
+
+        </script>
+    <script src="https://cdn.jsdelivr.net/npm/uuid@8.3.2/dist/umd/uuidv4.min.js"></script>
+</th:block>
+
+
+
+
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="layouts/default-layout">
+<th:block layout:fragment="css-js">
+    <link rel="stylesheet" th:href="@{/css/cs/cs.css}">
+</th:block>
+<th:block layout:fragment="content">
+    <!-- 메인 -->
+    <main>
+        <section id="cs">
+            <!-- nav-->
+            <th:block th:replace="fragments/_aside::csAside"></th:block>
+            <!-- 본문 -->
+            <div class="content">
+                <!-- 카테고리 -->
+                <div class="tab">
+                    <span class="event_title">
+                        이벤트 <span class="new">NEW</span>
+                    </span>
+                </div>
+                <div class="event">
+                    <ul id="events" class="event_list">
+                        <li th:if="${csArticles.size() == 0}">
+                            <b>
+                                등록된 이벤트가 없습니다.
+                            </b>
+                        </li>
+                        <th:block th:each="article:${csArticles}">
+                            <li th:class="${(T(java.time.LocalDate).parse(article.cs_eventEnd) lt T(java.time.LocalDate).now()) ? 'end' : (article.cs_eventBannerState == 1 ? 'on' : 'end')}">
+                                <b>[[${article.cs_title}]]</b>
+                                <span>기간: [[${article.cs_eventStart}]] ~ [[${article.cs_eventEnd}]]</span>
+                                <a th:href="@{/cs/event/view (cs_cate=${article.cs_cate}, cs_no=${article.cs_no})}"><img th:src="|@{/}img/cs/${article.cs_no}/${article.cs_eventbannerImg}|"></a>
+                            </li>
+                        </th:block>
+                    </ul>
+                </div>
+                <!-- 페이징 -->
+                <div class="paging" th:object="${ph}" th:style="${#lists.size(csArticles) == 0 ? 'visibility:hidden;':''}">
+
+                    <th:block th:if="*{showPrev}">
+                        <a th:href="@{/cs/event/list} + ${ph.sc.getQueryString(ph.beginPage-1)}" class="prev">< </a>
+                    </th:block>
+
+
+                    <th:block th:each="num:${#numbers.sequence(ph.beginPage, ph.endPage)}">
+                        <span th:class="${num == ph.sc.page ? 'on':'num'}"><a th:href="@{/cs/event/list} + ${ph.sc.getQueryString(num)}" >[[${num}]]</a></span>
+                    </th:block>
+
+
+                    <th:block th:if="*{showNext}">
+                        <a th:href="@{/cs/event/list} + ${ph.sc.getQueryString(ph.endPage+1)}" class="next"> ></a>
+                    </th:block>
+                </div>
+            </div>
+        </section>
+    </main>
+</th:block>
+<th:block layout:fragment="script"></th:block>
+<script>
+    const article = [[${csArticles}]];
+    for(var i = 0; i < article.length; i++){
+        console.log("eventBanner : " + article.cs_cs_eventbannerImg);
+    }
+</script>
+</html>
+
+
+
+
+

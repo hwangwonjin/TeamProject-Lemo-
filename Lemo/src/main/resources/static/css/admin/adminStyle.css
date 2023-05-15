@@ -1,0 +1,567 @@
+
+/* 헤더 */
+
+/* 메인 */
+
+main .main_content .main_content_div {
+    border: 1px solid transparent;
+    display: flex;
+    flex-wrap: wrap;
+}
+main #main_content_div {
+    border-top: 1px solid #F3F6F9;
+    padding-top: 26px;
+    margin-bottom: 34px;
+}
+main .main_content .col1 {
+    flex: 0 0 auto;
+    width: 100%;
+}
+main .main_content .col1 > .today_status {
+    display: grid;
+    grid-template-columns: repeat(6,1fr);
+    grid-gap: 15px;
+    margin-bottom: 30px;
+    padding-left: 10px;
+    padding-right: 19px;
+}
+main .main_content .col1 > .today_status .single_status {
+    background: #fff;
+    border-radius: 10px;
+    padding: 10px;
+    border: 0 solid #e3e3e3;
+    box-shadow: 0 2px 6px 0 rgb(218 218 253 / 2%), 0 2px 6px 0 rgb(206 206 238 / 15%);
+}
+main .main_content .col1 > .today_status .single_status > p {
+    font-size: 14px;
+    font-weight: 500;
+    color: #bbd444;
+    margin-bottom: 15px;
+}
+main .main_content .col1 > .today_status .single_status > h3 {
+    font-size: 27px;
+    font-weight: 600;
+    color: #14256a;
+}
+main .main_content .col1_header {
+    border-bottom: 1px solid #f4f5fa;
+    padding: 10px;
+}
+main .main_content .col1_header > h3 {
+    font-size: 17px;
+    font-weight: 500;
+    color: #3d3d3d;
+}
+main .main_content .col1_graph {
+    padding: 10px;
+}
+main .main_content .main_content_div2 {
+    border: 1px solid transparent;
+    display: flex;
+    flex-wrap: wrap;
+    position: relative;
+
+}
+main .main_content .main_content_div2 > h3 {
+    font-size: 17px;
+    font-weight: 500;
+    padding: 10px;
+    color: #3d3d3d;
+}
+main .main_content .main_content_div2 .more {
+    position: absolute;
+    top: 22px;
+    right: 10px;
+    font-size: 12px;
+    color: #424242;
+    font-weight: 200;
+    cursor: pointer;
+}
+main .main_content .main_content_div2 .more:hover {
+    text-decoration: underline !important;
+}
+main .today_sales_status {
+    background: #fff;
+    position: relative;
+    width: 30%;
+    border-radius: 10px;
+    border: 3px double #F3F6F9;
+    box-shadow: 0 2px 6px 0 rgb(218 218 253 / 2%), 0 2px 6px 0 rgb(206 206 238 / 15%);;
+    margin-bottom: 23px;
+    margin: 0 auto;
+    position: relative;
+    background: #fefefe;
+}
+main .today_sales_status > p {
+    font-size: 24px;
+    text-align: center;
+    width: 330px;
+    height: 60px;
+    color: #6c757d!important;
+    border: none;
+    line-height: 60px;
+    margin: 0 auto;
+    font-family: 'Noto Sans KR';
+}
+main .tsd_msg {
+    position: absolute;
+    top: 136px;
+    font-size: 13px;
+    color: #424242;
+    font-weight: 300;
+}
+main .tsd_msg > strong {
+    font-size: 13px;
+    color: #00bbfe;
+}
+main .tsd_msg2 {
+    font-size: 13px;
+    color: #424242;
+    font-weight: 300;
+    margin-top: 70px;
+}
+main .tsd_msg2 > strong {
+    font-size: 13px;
+    color: #00bbfe;
+}
+main .sales_day_status {
+    margin-top: 50px;
+    border-top: 1px solid #F3F6F9;
+    padding-top: 26px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 0px;
+}
+main .tot_sales_day {
+    border-radius: 10px;
+    border: 0 solid #e3e3e3;
+    box-shadow: 0 2px 6px 0 rgb(218 218 253 / 2%), 0 2px 6px 0 rgb(206 206 238 / 15%);
+    display: inline-block;
+    background: #FBFBFD;
+    border: 1px solid #e1e1e1;
+    padding: 24px;
+    text-align: center;
+}
+main .tot_sales_day > div {
+    text-align: center;
+    font-family: 'Noto Sans KR';
+    font-weight: 300;
+}
+main .tot_sales_day > .tsd_tit1 {
+    padding-right: 12px;
+    font-size: 25px;
+    color: #bbd444;
+    font-weight: 400 !important;
+    padding-top: 14px;
+}
+main .tot_sales_day > .tsd_tit2 {
+    font-size: 20px;
+    padding-top: 10px;
+    color: #424242;
+}
+main .tot_sales_day .tsd_tit3 {
+    font-size: 27px;
+    padding-top: 12px;
+    color: #424242;
+    display: inline-block;
+}
+main .tot_sales_day > .tsd_tit4 {
+    font-size: 20px;
+    padding-top: 10px;
+    color: #424242;
+    display: inline-block;
+}
+main .tot_sales_day i {
+    font-style: normal;
+    color: #8a8989;
+    font-size: 13px;
+    display: inline-block;
+}
+main .tsd_grid {
+    display: inline-block;
+    margin-left: 16px;
+}
+main .tsd_grid p {
+    font-size: 20px;
+    font-weight: 400;
+    color: #bbd444;
+    margin-bottom: 10px;
+}
+main .tsd_grid h3 {
+    font-size: 17px;
+    color: #424242;
+}
+main .tsd_grid i {
+    font-style: normal;
+    color: #8a8989;
+    font-size: 13px;
+    font-weight: 300;
+}
+main .tsd_grid1 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 5px;
+    text-align: center;
+    margin-bottom: 5px;
+}
+main .tsd_grid1 > div {
+    border-radius: 10px;
+    box-shadow: 0 2px 6px 0 rgb(218 218 253 / 2%), 0 2px 6px 0 rgb(206 206 238 / 15%);
+    padding: 15px;
+    background: #FBFBFD;
+    border: 1px solid #e1e1e1;
+}
+main .tsd_grid2 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 5px;
+    text-align: center;
+}
+main .tsd_grid2 > div {
+    border-radius: 10px;
+    box-shadow: 0 2px 6px 0 rgb(218 218 253 / 2%), 0 2px 6px 0 rgb(206 206 238 / 15%);
+    padding: 24px;
+    background: #FBFBFD;
+    border: 1px solid #e1e1e1;
+}
+
+
+
+
+main .current_sales_stat {
+    width: 100%;
+}
+main .tot_sales {
+    margin: 18px 0;
+    text-align: center;
+}
+main .tot_sales_box {
+    box-shadow: 0 2px 6px 0 rgb(218 218 253 / 65%), 0 2px 6px 0 rgb(206 206 238 / 54%);
+    color: #6c757d!important;
+    padding: 5px 80px 0 78px;
+    border: 1px solid #ececec;
+    border-radius: 11px;
+    border-left: 6px solid #bbd444;
+    background: #fff;
+    height: 59px;
+    display: inline-block;
+    margin: 10px 0 20px;
+}
+main .tot_sales_box > div {
+    display: inline-block;
+    font-size: 22px;
+    color: #6f6d6d;
+}
+main .ts_tit1 {
+    margin-right: 14px;
+}
+main .ts_count {
+    font-size: 35px !important;
+    margin-right: 3px;
+    font-weight: 500;
+    color: #32393f !important;
+}
+main .ts_tit2 {
+    margin-right: 26px;
+    font-weight: 300;
+}
+main .ts_price {
+    font-size: 35px !important;
+    margin-right: 3px;
+    font-weight: 500;
+    color: #32393f !important;
+}
+main .col1_graph_chart {
+    display: flex;
+    flex-wrap: wrap;
+}
+main .col1_graph_chart .graph_inner {
+    flex: 0 0 auto;
+    width: 66.66666667% !important;
+}
+
+main .col1_graph_chart .payment_stat_graph {
+    flex: 0 0 auto;
+    width: 33.33333333%;
+}
+main .col1_graph_chart #donutchart {
+    margin-bottom: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px 0 rgb(218 218 253 / 2%), 0 2px 6px 0 rgb(206 206 238 / 15%);
+    border: 1px solid #e1e1e1;
+    padding: 4px;
+}
+main .tsd_best {
+    border: 1px solid transparent;
+    display: flex;
+    flex-wrap: wrap;
+    padding-top: 22px;
+    position: relative;
+}
+main .tsd_best_inner {
+    padding: 2px 20px;
+    background: #2779BD;
+    color: #fff;
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+    position: relative;
+}
+main .tsd_best_inner::after {
+    content: "";
+    position: absolute;
+    top: 4px;
+    border-width: 0px 23px 23px 0;
+    border-style: solid;
+    transform: rotate(-45deg);
+    border-color: #fff;
+    right: -12px;
+}
+main .tsd_best_inner h3 {
+    font-size: 18px;
+    font-weight: 500;
+    padding-right: 38px;
+}
+main .tsd_best_inner i {
+    font-style: normal;
+    font-size: 18px;
+    padding-left: 6px;
+}
+
+main .main_content .col2 {
+    flex: 0 0 auto;
+    width: 100%;
+    background: #fff;
+    padding: 10px;
+    margin-top: 6px;
+}
+main .main_content .col2 .noticeList {
+    border-top: 1px solid #bbb;
+    border-collapse: collapse;
+}
+main .main_content .col2 .noticeList ul {
+    border-bottom: 1px solid #bbb;
+}
+main .main_content .col2 .noticeList ul:first-child {
+    background: #F7F7F7;
+}
+main .main_content .col2 .noticeList li {
+    display: inline-block;
+    height: 32px;
+    font-size: 13px;
+    padding-top: 7px;
+    text-align: center;
+    font-family: 'Noto Sans KR';
+}
+main .main_content .col2 .noticeList .noticeTitle {
+    text-align: left;
+    padding-left: 21px;
+}
+main .main_content .col2 .noticeList .noticeTitle a {
+    text-align: left;
+    padding-left: 21px;
+    display: inline-block;
+    height: 32px;
+    font-size: 13px;
+    font-family: 'Noto Sans KR';
+    font-weight: 500;
+}
+main .main_content .col2 .noticeList .noticeTitle i {
+
+}
+main .main_content .col2 .noticeList .noticeTitle a:hover {
+    text-decoration: underline !important;
+}
+main .main_content .col2 .noticeList li:nth-of-type(1) {
+    width: 8%;
+}
+main .main_content .col2 .noticeList li:nth-of-type(2) {
+    width: 15%;
+}
+main .main_content .col2 .noticeList li:nth-of-type(3) {
+     width: 65%;
+}
+main .main_content .col2 .noticeList li:nth-of-type(4) {
+    width: 11%;
+}
+
+
+main .main_content .col2 .noticeList2 {
+    border-top: 1px solid #bbb;
+    border-collapse: collapse;
+}
+main .main_content .col2 .noticeList2 ul {
+    border-bottom: 1px solid #bbb;
+}
+main .main_content .col2 .noticeList2 ul:first-child {
+    background: #F7F7F7;
+}
+main .main_content .col2 .noticeList2 li {
+    display: inline-block;
+    height: 32px;
+    font-size: 13px;
+    padding-top: 7px;
+    text-align: center;
+    font-family: 'Noto Sans KR';
+}
+main .main_content .col2 .noticeList2 .noticeTitle {
+    text-align: left;
+    padding-left: 21px;
+}
+main .main_content .col2 .noticeList2 .noticeTitle a {
+        display: inline-block;
+        height: 24px;
+        font-size: 13px;
+        padding-left: 21px;
+        text-align: center;
+        font-family: 'Noto Sans KR';
+        font-weight: 500;
+}
+main .main_content .col2 .noticeList2 .noticeTitle a:hover {
+    text-decoration: underline !important;
+}
+main .main_content .col2 .noticeList2 li:nth-of-type(1) {
+    width: 8%;
+}
+main .main_content .col2 .noticeList2 li:nth-of-type(2) {
+    width: 55%;
+}
+main .main_content .col2 .noticeList2 li:nth-of-type(3) {
+    width: 26%;
+}
+main .main_content .col2 .noticeList2 li:nth-of-type(4) {
+    width: 8%;
+}
+
+main .main_content .col2 .bestAccList {
+    border-top: 1px solid #bbb;
+    border-collapse: collapse;
+}
+main .main_content .col2 .bestAccList ul {
+    border-bottom: 1px solid #bbb;
+}
+main .main_content .col2 .bestAccList ul:first-child {
+    background: #F7F7F7;
+}
+main .main_content .col2 .bestAccList li {
+    display: inline-block;
+    height: 32px;
+    font-size: 13px;
+    text-align: center;
+    font-family: 'Noto Sans KR';
+    line-height: 32px;
+}
+main .ba_li1 { width: 8%; }
+main .ba_li2 { width: 15%; }
+main .ba_li3 { width: 35%; }
+main .ba_li4 { width: 30%; }
+main .ba_li5 { width: 10%; }
+
+main .bestAccList > ul:nth-of-type(2) {
+    background: #fcf951;
+}
+main .bestAccList > ul:nth-of-type(2) > li {}
+
+main .tsd_guide {
+    font-size: 12px;
+    color: #424242;
+    font-weight: 200;
+    position: absolute;
+    top: 44px;
+    right: 14px;
+}
+main .tsd_guide2 {
+    font-size: 12px;
+    color: #424242;
+    font-weight: 200;
+    position: absolute;
+    top: 44px;
+    right: 14px;
+}
+main .ba_li3 > a {
+    font-size: 13px;
+}
+main .ba_li3 > a:hover {
+    text-decoration: underline !important;
+}
+
+
+
+
+
+main .main_content .col2 .bestRoomList {
+    border-top: 1px solid #bbb;
+    border-collapse: collapse;
+}
+main .main_content .col2 .bestRoomList ul {
+    border-bottom: 1px solid #bbb;
+}
+main .main_content .col2 .bestRoomList ul:first-child {
+    background: #F7F7F7;
+}
+main .main_content .col2 .bestRoomList li {
+    display: inline-block;
+    height: 32px;
+    font-size: 13px;
+    padding-top: 7px;
+    text-align: center;
+}
+main .br_li1 { width: 8%; }
+main .br_li2 { width: 10%; }
+main .br_li3 { width: 30%; }
+main .br_li4 { width: 10%; }
+main .br_li5 { width: 30%; }
+main .br_li6 { width: 8%; }
+
+main .list_null {
+    width: 100% !important;
+    margin: 10px 0 10px 0 !important;
+}
+
+main .paging {
+    margin: 15px 0;
+    text-align: center;
+}
+main .paging .opg_1 {
+    display: inline-block;
+    width: 200px;
+}
+main .paging .opg_1 > button {
+    border: 1px solid #dcdee0;
+    width: 19px;
+    height: 21px;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+}
+main .paging .opg_1 > span {
+    font-size: 13px;
+    padding: 0px 18px;
+    color: #929294;
+}
+main .paging .opg_1 > span > b {
+    font-size: 13px;
+    padding: 0 2px;
+    font-weight: 700;
+}
+main .paging .opg_1 > span > s {
+    font-size: 13px;
+    text-decoration: none;
+    color: #929294;
+}
+main .footer_inner > .footer_menu {
+    margin-top: 30px;
+    position: relative;
+}
+
+
+/* 차트 */
+main #chart_div {
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 6px 0 rgb(218 218 253 / 2%), 0 2px 6px 0 rgb(206 206 238 / 15%);
+    border-radius: 10px;
+    background: #FBFBFD;
+    border: 1px solid #e1e1e1;
+    padding: 4px;
+}
+
+

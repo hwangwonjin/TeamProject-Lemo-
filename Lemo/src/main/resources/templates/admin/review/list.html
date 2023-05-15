@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/admin-layout}">
+<th:block layout:fragment="css-js">
+    <link rel="stylesheet" th:href="@{/css/admin/adminSubStyle.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/adminCommon.css}">
+</th:block>
+<th:block layout:fragment="content">
+    <main>
+        <div class="main_inner">
+            <!-- 죄측 사이드바 -->
+            <th:block th:replace="~{fragments/_aside::adminFragment}"></th:block>
+            <!-- 우측 메인 컨테이너 -->
+            <section class="main_content">
+                <div class="main_cotent_inner">
+                    <div class="main_content_div">
+                        <div class="col0">
+
+                        </div>
+                        <div class="col_nav">
+                            <span>리뷰관리 ></span>
+                            <span>등록리뷰</span>
+                        </div>
+                        <div class="col2">
+                            <form th:action="@{/admin/review/list}">
+                                <span class="search_review_tit">리뷰검색</span>
+                                <table class="search_review_table">
+                                    <tr>
+                                        <th>
+                                            <select name="searchField">
+                                                <option value="acc_id" th:selected="${ph.sc.searchField == 'acc_id'}">숙소번호</option>
+                                                <option value="acc_name" th:selected="${ph.sc.searchField == 'acc_name'}">숙소명</option>
+                                                <option value="user_id" th:selected="${ph.sc.searchField == 'user_id'}">판매자아이디</option>
+                                            </select>
+                                        </th>
+                                        <td>
+                                            <input type="text" class="search_box" name="searchWord" placeholder="검색어를 입력하세요">
+                                        </td>
+                                    </tr>
+                                </table>
+                                <button type="button" class="resetOption" onclick="location.href = window.location.origin + window.location.pathname;">초기화</button>
+                                <button type="submit" class="btnSearch">검색</button>
+                                <span class="totalCount">리뷰 총 개수 ([[${totalReview}]])</span>
+                                <div class="board_list">
+                                    <ul>
+                                        <li class="review_li1">예약번호</li>
+                                        <li class="review_li2">숙소명</li>
+                                        <li class="review_li3">아이디</li>
+                                        <li class="review_li4">제목</li>
+                                        <li class="review_li5">평점</li>
+                                        <li class="review_li6">답변상태</li>
+                                        <li class="review_li7">등록일</li>
+                                    </ul>
+
+                                    <ul th:each="review,i:${reviews}">
+                                        <li class="review_li1">
+                                            <a href="#">[[${review.res_no}]]</a>
+                                        </li>
+                                        <li class="review_li2" th:text="${review.acc_name}">숙소명</li>
+                                        <li th:text="${review.user_id}" class="userId_li">충치왕김건치</li>
+                                        <li class="prodName">
+                                            <span th:if="${review.revi_thumb != null}" class="tag">PHOTO</span>
+                                            <a th:href="@{/admin/review/view (revi_id=${review.revi_id})}"
+                                               th:text="${review.revi_title}" class="reviewTitle" th:data-no="${review.revi_id}">title</a>
+                                        </li>
+                                        <li class="review_li5">
+                                            <div class="r_rating">
+                                                <th:block th:if="${review.revi_rate == 5}">
+                                                    <h6 class="rating5mini">&nbsp;</h6>
+                                                </th:block>
+                                                <th:block th:if="${review.revi_rate == 4}">
+                                                    <h6 class="rating4mini">&nbsp;</h6>
+                                                </th:block>
+                                                <th:block th:if="${review.revi_rate == 3}">
+                                                    <h6 class="rating3mini">&nbsp;</h6>
+                                                </th:block>
+                                                <th:block th:if="${review.revi_rate == 2}">
+                                                    <h6 class="rating2mini">&nbsp;</h6>
+                                                </th:block>
+                                                <th:block th:if="${review.revi_rate == 1}">
+                                                    <h6 class="rating1mini">&nbsp;</h6>
+                                                </th:block>
+                                            </div>
+                                        </li>
+                                        <li th:text="${review.revi_reply != null? '답변완료':'대기중'}" th:class="${review.revi_reply != null? 'completeReply':'waitReply'}"></li>
+                                        <li  class="review_li7" th:text="${#strings.substring(review.revi_rdate, 0, 10)}">2023-02-26</li>
+                                        <!-- th:text="${#strings.substring(reviewDTO.content, 0, 10)}" -->
+                                    </ul>
+                                </div>
+                                <div class="pagination" th:object="${ph}" th:style="${#lists.size(reviews) == 0 ? 'visibility:hidden;':''}">
+
+                                    <th:block th:if="*{showPrev}">
+                                        <a th:href="@{/admin/review/list} + ${ph.sc.getQueryString(ph.beginPage-1)}" class="prev">< </a>
+                                    </th:block>
+
+                                    <th:block th:each="num:${#numbers.sequence(ph.beginPage, ph.endPage)}">
+                                        <a th:href="@{/admin/review/list} + ${ph.sc.getQueryString(num)}" th:class="${num == ph.sc.page ? 'num current':'num'}">
+                                            [[${num}]]
+                                        </a>
+                                    </th:block>
+
+                                    <th:block th:if="*{showNext}">
+                                        <a th:href="@{/admin/review/list} + ${ph.sc.getQueryString(ph.endPage+1)}" class="next"> ></a>
+                                    </th:block>
+
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="blank30"></div>
+                </div>
+            </section>
+        </div>
+    </main>
+    <th:block th:replace="~{fragments/_footer::footerFragment}"></th:block>
+</th:block>
+<th:block layout:fragment="script">
+</th:block>
+</html>

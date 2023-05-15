@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="layouts/default-layout">
+<th:block layout:fragment="css-js">
+    <link rel="stylesheet" th:href="@{/css/cs/cs.css}">
+</th:block>
+<th:block layout:fragment="content">
+    <!-- 메인 -->
+    <main>
+        <section id="cs" class="terms_all">
+            <!-- nav-->
+            <th:block th:replace="fragments/_aside::csAside"></th:block>
+            <!-- 본문 -->
+            <div class="content">
+                <!-- 카테고리 -->
+                <div class="tab">
+                    <span class="terms_title">
+                        약관 및 정책
+                    </span>
+                </div>
+                <!-- 약관 및 정책 카테고리 -->
+                <div class="sub_cate">
+                    <li><a class="on"  id="cTerms" onclick="onTerms();">이용약관</a></li>
+                    <li><a class="off1" id="cLocation" onclick="onLocation();">위치기반 서비스 이용약관</a></li>
+                    <li><a class="off2" id="cPrivacy" onclick="onPrivacy();">개인정보 수집 및 이용</a></li>
+                    <li><a class="off3" id="cFourteen" onclick="onFourteen();">만 14세 이상 확인</a></li>
+                    <li><a class="off4" id="cMarketing" onclick="onMarketing();">마케팅 알림 수신동의</a></li>
+                </div>
+
+                <!-- 이용약관 -->
+                <div class="terms">
+                    <h2>LEMO 이용약관</h2>
+                    <ul class="show_list open_list" th:each="term:${map.term}">
+                        <li>
+                            <a href="#" id="terms_tab" class="list_n">
+                                <b>[[${term.terms_title}]]</b>
+                            </a>
+                            <div class="toggle" th:utext="${term.terms_content}">
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 위치기반 서비스 이용약관 -->
+                <div class="location" style="display:none;">
+                    <h2>위치기반 서비스 이용약관</h2>
+                    <ul class="show_list open_list" th:each="location:${map.location}">
+                        <li>
+                            <a href="#" class="list_n">
+                                <b>[[${location.terms_title}]]</b>
+                            </a>
+                            <div class="toggle" th:utext="${location.terms_content}">
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 개인정보 처리방침 -->
+                <div class="privacy table_common" id="privacy" style="display:none;">
+                    <h2>개인정보 수집 및 이용</h2>
+                    <div th:utext="${map.privacy.terms_content}"></div>
+                </div>
+
+                <!-- 만 14세 이상 확인 -->
+                <div class="fourteen" style="display: none;">
+                    <h2>만 14세 이상 확인</h2>
+                    <div th:utext="${map.fourteen.terms_content}"></div>
+
+                </div>
+
+                <!-- 마케팅 알림 수신 동의 -->
+                <div class="marketing table_common" id="marketing" style="display: none;">
+                    <h2>마케팅 알림 수신 동의</h2>
+                    <div th:utext="${map.marketing.terms_content}"></div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+</th:block>
+
+<th:block layout:fragment="script">
+    <script th:src="@{/js/cs/toggle.js}"></script>
+    <script th:src="@{/js/cs/terms.js}"></script>
+    <script>
+        $(function (){
+            const type = "[[${param.type}]]" || null;
+
+            if(type != null)
+                $("#"+type).trigger("click");
+        })
+    </script>
+</th:block>
+</html>
+
+
+

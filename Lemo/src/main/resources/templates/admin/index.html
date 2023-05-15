@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/admin-layout}">
+<th:block layout:fragment="css-js">
+    <link rel="stylesheet" th:href="@{/css/admin/adminStyle.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/adminCommon.css}">
+    <style>
+        main .main_content > .main_cotent_inner {
+            background: #fff !important;
+            box-shadow: 0 2px 6px 0 rgb(218 218 253 / 2%), 0 2px 6px 0 rgb(206 206 238 / 15%);
+            border: 1px solid #F3F6F9;
+        }
+    </style>
+</th:block>
+<th:block layout:fragment="content">
+    <main>
+        <div class="main_inner">
+            <!-- 죄측 사이드바 -->
+            <!-- git commit test3 -->
+            <th:block th:replace="~{fragments/_aside::adminFragment}"></th:block>
+            <!-- 우측 메인 컨테이너 -->
+            <section class="main_content">
+                <div class="main_cotent_inner">
+                    <div class="main_content_div">
+                        <div class="col1">
+                            <!-- 오늘 날짜 출력 -->
+                            <div class="today_sales_status">
+                                <p>[[${#dates.format(#dates.createNow(), 'yyyy년 MM월 dd일')}]]</p>
+                            </div>
+                            <p class="tsd_msg">
+                                금일 <strong>([[${#dates.format(#dates.createNow(), 'yyyy년 MM월 dd일')}]])</strong> 데이터가 조회됩니다.</p>
+                            </p>
+                            <div class="sales_day_status">
+                                <th:block th:if="${#lists.size(todaySales) == 0}">
+                                    <div class="tot_sales_day">
+                                        <div class="tsd_tit1">총매출</div>
+                                        <div class="tsd_tit2">0 <i>건</i></div>
+                                        <div class="tsd_tit3">0</div>
+                                        <div class="tsd_tit4"><i>원</i></div>
+                                    </div>
+                                </th:block>
+                                <th:block th:if="${#lists.size(todaySales) != 0}">
+                                    <div class="tot_sales_day">
+                                        <div class="tsd_tit1">총매출</div>
+                                        <div class="tsd_tit2">[[${todaySales[0].count_sales}]] <i>건</i></div>
+                                        <div class="tsd_tit3" th:text="${#numbers.formatInteger(todaySales[0].tot_res_price, 0, 'COMMA')}"></div>
+                                        <div class="tsd_tit4"><i>원</i></div>
+                                    </div>
+                                </th:block>
+                                <div class="tsd_grid">
+                                    <div class="tsd_grid1">
+                                        <div class="tsd_res">
+                                            <p>예약</p>
+                                            <h3 th:if="${#lists.size(todaySales) == 0}">0 <i>건</i></h3>
+                                            <h3 th:unless="${#lists.size(todaySales) == 0}">[[${todaySales[0].count_sales}]] <i>건</i></h3>
+                                        </div>
+                                        <div class="tsd_cancel">
+                                            <p>취소</p>
+                                            <h3 th:if="${#lists.size(totalCanceled) == 0}">0 <i>건</i></h3>
+                                            <h3 th:unless="${#lists.size(totalCanceled) == 0}">[[${totalCanceled}]] <i>건</i></h3>
+                                        </div>
+                                        <div class="tsd_visit">
+                                            <p>방문자</p>
+                                            <h3>[[${totalVisitors}]] <i>명</i></h3>
+                                        </div>
+                                    </div>
+                                    <div class="tsd_grid2">
+                                        <div class="tsd_qna">
+                                            <p>1:1 문의</p>
+                                            <h3>[[${totalQna}]] <i>건</i></h3>
+                                        </div>
+                                        <div class="tsd_prod">
+                                            <p>상품등록</p>
+                                            <h3>[[${totalAcc}]] <i>건</i></h3>
+                                        </div>
+                                        <div class="tsd_regi">
+                                            <p>회원가입</p>
+                                            <h3>[[${totalUser}]] <i>건</i></h3>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="blank10"></div>
+                    <div class="tsd_msg2">당일 기준 (<strong>[[${#dates.format(#dates.createNow(), 'yyyy년 MM월 dd일')}]]</strong>)로부터 <strong>6일 전</strong> 데이터가 조회됩니다.</div>
+                    <div class="main_content_div" id="main_content_div">
+                        <div class="col1" style="width: 100%">
+                            <div class="col1_graph_chart">
+                                <!-- 매출 현황 -->
+                                <div class="graph_inner" style="width:100% ;">
+                                    <div id="chart_div" style="width: 99%; height: 500px;"></div>
+                                </div>
+                                <!-- 결제 현황 -->
+                                <div class="payment_stat_graph">
+                                    <div id="donutchart" style="width: 100%; height: 500px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tsd_best">
+                        <div class="tsd_best_inner">
+                            <h3>BEST <i>숙소</i></h3>
+                        </div>
+                        <div class="tsd_guide">평점, 리뷰 기준 순위입니다. </div>
+                        <div class="col2">
+                                <div class="bestAccList">
+                                    <ul>
+                                        <li class="ba_li1">#</li>
+                                        <li class="ba_li2">숙박번호</li>
+                                        <li class="ba_li3">숙박명</li>
+                                        <li class="ba_li4">판매자 아이디</li>
+                                        <li class="ba_li5">등록일</li>
+                                    </ul>
+                                    <th:block th:if="${#lists.size(bestAccs) != 0}">
+                                        <ul th:each="bestAcc,i:${bestAccs}">
+                                            <li class="ba_li1" th:text="${i.index + 1 + '위'}"></li>
+                                            <li class="ba_li2" th:text="${bestAcc.acc_id}">1004590</li>
+                                            <li class="ba_li3" th:value="${bestAcc.acc_id}">
+                                                <a href="#">[[${bestAcc.acc_name}]]</a>
+                                            </li>
+                                            <li class="ba_li4" th:text="${bestAcc.user_id}">circle@naver.com</li>
+                                            <li class="ba_li5" th:text="${bestAcc.acc_rdate.substring(0, 10)}">2023-04-12</li>
+                                        </ul>
+                                    </th:block>
+                                    <th:block th:if="${#lists.size(bestAccs) == 0}">
+                                        <ul>
+                                            <li class="list_null">등록된 숙박이 없습니다.</li>
+                                        </ul>
+                                    </th:block>
+                                </div>
+                            </div>
+                    </div>
+                    <div class="blank30"></div>
+                    <div class="main_content_div2">
+                        <div class="tsd_best_inner">
+                            <h3>공지사항</h3>
+                        </div>
+                        <a class="more" th:href="@{/admin/cs/notice/list}">> 더보기</a>
+                        <div class="col2">
+                            <form action="#">
+                                <div class="noticeList">
+                                    <ul>
+                                        <li>#</li>
+                                        <li>유형</li>
+                                        <li>제목</li>
+                                        <li>등록일</li>
+                                    </ul>
+                                    <th:block th:if="${#lists.size(notice) != 0}">
+                                        <ul th:each="notice,i:${notice}">
+                                        <li th:text="${i.index + 1}"></li>
+                                        <li th:text="${#strings.equals(notice.cs_type, 'notice')? '공지사항':'이벤트당첨자안내' }"></li>
+                                        <li class="noticeTitle">
+                                            <!-- <i>[[${#strings.equals(notice.cs_type, "notice")? "공지사항":"이벤트당첨자안내" }]]</i>-->
+                                            <a th:href="@{/admin/cs/notice/view (cs_no=${notice.cs_no}, page=1)}">[[${notice.cs_title}]]</a>
+                                        </li>
+                                        <li th:text="${notice.cs_rdate.substring(0, 10)}"></li>
+                                    </ul>
+                                    </th:block>
+                                    <th:block th:if="${#lists.size(notice) == 0}">
+                                        <ul>
+                                            <li class="list_null">등록된 공지사항이 없습니다.</li>
+                                        </ul>
+                                    </th:block>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="blank30"></div>
+                    <!-- 최신글 5개 불러오기 -->
+                    <div class="main_content_div2">
+                        <div class="tsd_best_inner">
+                            <h3>1:1 문의</h3>
+                        </div>
+                        <a class="more" th:href="@{/admin/cs/qna/list}">> 더보기</a>
+                        <div class="col2">
+                            <form action="#">
+                                <div class="noticeList2">
+                                    <ul>
+                                        <li>#</li>
+                                        <li>제목</li>
+                                        <li>닉네임</li>
+                                        <li>작성일</li>
+                                    </ul>
+                                    <th:block th:if="${#lists.size(qnaArticles) != 0}">
+                                        <ul th:each="qna,i:${qnaArticles}">
+                                            <li th:text="${i.index + 1}"></li>
+                                            <li class="noticeTitle">
+                                                <a th:href="@{/admin/cs/qna/view (cs_no=${qna.cs_no}, page=1)}">[[${qna.cs_title}]]</a>
+                                            </li>
+                                            <li th:text="${qna.nick}"></li>
+                                            <li th:text="${qna.cs_rdate.substring(0, 10)}"></li>
+                                        </ul>
+                                    </th:block>
+                                    <th:block th:if="${#lists.size(qnaArticles) == 0}">
+                                        <ul>
+                                            <li class="list_null">등록된 1:1문의글이 없습니다.</li>
+                                        </ul>
+                                    </th:block>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+    <th:block th:replace="~{fragments/_footer::footerFragment}"></th:block>
+</th:block>
+<th:block layout:fragment="script">
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KZW2RVP"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <script>
+        // gtag: Google Analytics 태그를 전송하기 위한 함수
+        gtag('event', 'LEMOEVENT', {
+            'visitors':'http://junghyun.site/Lemo'
+        });
+    </script>
+    <!-- 구글 차트 -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script th:inline="javascript">
+         // 참조 데이터 준비
+        let stats = [[${stats}]];
+        let avg_res_price = [[${avg_res_price}]];
+
+        // 구글 열 차트를 로드
+        google.charts.load('current', {'packages':['corechart']});
+        // callback 정의 : drawVisualization
+        google.charts.setOnLoadCallback(drawVisualization);
+
+        // 오늘 날짜
+        let today = new Date();
+        // 오늘 날짜 (월)
+        nowMonth = today.getMonth() + 1;
+        // 오늘 날짜 (일)
+        nowDate = today.getDate();
+        // 출력 날짜 형태 지정
+        date = nowMonth + '/' + nowDate;
+
+        // 이전 날짜
+        let before = new Array();
+        for (let i=1; i<7; i++){
+            before[i] = new Date(today.getTime()-(i * 24 * 60 * 60 * 1000));
+            before[i] = (before[i].getMonth()+1) + '/' + before[i].getDate();
+        }
+
+            function drawVisualization() {
+
+                // 그래프 내용 : drawVisualization 구현
+                var data = new google.visualization.DataTable();
+                data.addColumn('string', '날짜');
+                data.addColumn('number', '매출');
+                data.addColumn('number', '평균');
+
+                for (var i = stats.length-1; i >= 0; i--) {
+                    data.addRow([stats[i].res_date, stats[i].tot_res_price, avg_res_price]);
+                }
+
+                // 그래프 주석 표기
+                var view = new google.visualization.DataView(data);
+                view.setColumns([0, 1,
+                                { calc: "stringify",
+                                    sourceColumn: 1,
+                                    type: "string",
+                                    role: "annotation" },
+                                2]);
+
+                // 그래프 옵션
+                var options = {
+                    title : '매출현황',
+                    titleTextStyle: {fontSize: 18},
+                    animation:{
+                        duration: 1000,
+                        easing: 'in',
+                    },
+                    // 세로축 설정
+                    vAxis: {
+                        titleTextStyle: {italic: false, bold: true},
+                        textStyle: {
+                            fontSize: 16,
+                            bold: true,
+                            italic: false
+                        }
+                    },
+                    // 가로축 설정
+                    hAxis: {
+                        titleTextStyle: {italic: false, bold: true},
+                        textStyle: {
+                            fontSize: 16,
+                            bold: true,
+                            italic: false
+                        }
+                    },
+                    format: 'currency',             // 숫자 또는 라벨의 형식 문자열 (currency: 현지 통화)
+                    seriesType: 'bars',             // 베이스 차트 종류
+                    colors: ['#AACB73'],            // 베이스 차트 색상
+                    pointSize: 5,                   // 라인 포인트
+                    crosshair: { trigger: 'both', color: '#FFD4D4', opacity: 0.8 }, // Display crosshairs on focus and selection.
+                    series: {1:
+                        { pointShape: 'circle', type: 'line', color: '#FFD4D4'}}    // 라인
+                };
+
+
+
+                var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
+                chart.draw(view, options);
+            }
+    </script>
+    <script th:inline="javascript">
+
+        // 참조 데이터 준비
+        let paysMap = [[${paysMap}]];
+
+        google.charts.load("current", {packages:["corechart"]});
+        google.charts.setOnLoadCallback(drawChart);
+        function drawChart() {
+            var data = google.visualization.arrayToDataTable([
+            ['payment', 'Percent'],
+            ['신용/체크카드', paysMap[1] ? paysMap[1].length : 0],
+            ['토스페이', paysMap[2] ? paysMap[2].length : 0],
+            ['PAYCO', paysMap[3] ? paysMap[3].length : 0],
+            ['카카오페이', paysMap[4] ? paysMap[4].length : 0]
+            ]);
+
+            var options = {
+                title: '결제현황',
+                titleTextStyle: {fontSize:18, bold: true},
+                width: '100%',
+                fontSize: 15,
+                pieHole: 0.3,
+                legend: {
+                position: 'bottom',
+                maxLines: 7
+                },
+                colors: ['#4F650D', '#7F9822', '#BBD444','#D3E570'],
+            };
+
+            var chart = new google.visualization.PieChart(document.getElementById('donutchart'));
+            chart.draw(data, options);
+
+            $(window).resize(function(){
+                drawChart();
+            });
+
+        }
+    </script>
+    <script th:inline="javascript">
+
+    </script>
+</th:block>
+</html>

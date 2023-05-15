@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="layouts/default-layout">
+        <th:block layout:fragment="css-js">
+            <link rel="stylesheet" th:href="@{/css/product/product.css}">
+            <script th:src="@{/js/product/productReservation.js}"></script>
+            <!-- 아임포트 결제 테스트 -->
+            <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+        </th:block>
+        <th:block layout:fragment="content">
+            <main id="reserv_reserv">
+                <div id="content">
+                    <div id="reserv_info_left">
+                        <div id="reserv_chkin">
+                            <h3>예약자 정보</h3>
+                            <strong>예약자 이름</strong>
+                            <p>
+                                <input type="text" name="name" placeholder="체크인시 필요한 정보입니다.">
+                            </p>
+                            <!--<p> 한글, 영문, 숫자만 입력 가능.</p>-->
+                            <div>
+                                <strong>휴대폰 번호</strong>
+                                <span>개인 정보 보호를 위해 안심번호로 숙소에 전송됩니다.</span>
+                                <div class="phone">
+                                    <input type="tel" name="hp" placeholder="체크인시 필요한 정보입니다." maxlength="13"
+                                           th:value="${user.hp.length == 11 ? user.hp.substring(0,3) + '-' + user.hp.substring(3,7) + '-' + user.hp.substring(7) :
+                                           user.hp.substring(0,3) + '-' + user.hp.substring(3,6) + '-' + user.hp.substring(6)}">
+                                    <button type="button" class="deleteHp">X</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="price">
+                            <h3>할인 수단 선택</h3>
+                            <div class="product_amount">
+                                <strong>구매총액</strong>
+                                <b>[[${#numbers.formatInteger(room.avg_price * map.days,1,'COMMA')}]]원</b>
+                            </div>
+                            <div class="discount_container">
+                                <div class="discount_header">
+                                    <button type="button" class="discount_button coupon">사용 가능한 쿠폰 [[${cps.size()}]]장</button>
+                                    <span id="dis_counpon_price">-</span>
+                                </div>
+                            </div>
+                            <div class="discount_container">
+                                <div class="discount_header">
+                                    <button type="button" class="discount_button point">포인트 사용 [[${#numbers.formatInteger(user.point,1,'COMMA')}]]P</button>
+                                    <div>
+                                        <div>
+                                            <input type="text" name="point" placeholder="0" class="discount_input">
+                                            <span>P</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="pay_select">
+                            <h3>결제수단 선택</h3>
+                            <select id="payment_select">
+                                <option value="1">신용/체크카드</option>
+                                <option value="2">토스페이</option>
+                                <option value="3">PAYCO</option>
+                                <option value="4">카카오페이</option>
+                            </select>
+                        </div>
+                        <div id="agree">
+                            <p id="checkAll">
+                                <label>
+                                    <input type="checkbox" name="checkAll">
+                                    <span>전체 동의</span>
+                                </label>
+                            </p>
+                            <p>
+                                <input type="checkbox" name="checkOne">
+                                <span class="tl" data-no="10">
+                                    <i>숙소이용규칙 및 취소/환불규정 동의</i>
+                                    <b>(필수)</b>
+                                </span>
+                            </p>
+                            <p>
+                                <input type="checkbox" name="checkOne">
+                                <span class="tl" data-no="11">
+                                    <i>개인정보 수집 및 이용 동의</i>
+                                    <b>(필수)</b>
+                                </span>
+                            </p>
+                            <p>
+                                <input type="checkbox" name="checkOne">
+                                <span class="tl" data-no="12">
+                                    <i>개인정보 제 3자 제공 동의</i>
+                                    <b>(필수)</b>
+                                </span>
+                            </p>
+                            <p>
+                                <input type="checkbox" name="checkOne">
+                                <span class="tl" data-no="13">
+                                    <i>만 14세 이상 확인</i>
+                                    <b>(필수)</b>
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    <div id="reserv_info_right">
+                        <div class="info">
+                            <p class="info_name">
+                                <strong>숙소이름</strong>
+                                [[${room.acc_name}]]
+                            </p>
+                            <p>
+                                <strong>객실타입/기간</strong>
+                                [[${room.room_name}]] / [[${map.days}]]박
+                            </p>
+                            <p>
+                                <strong>체크인</strong>
+                                [[${map.checkIn.substring(5,10)}]] [[${map.CIday}]] [[${room.checkInTime.substring(0,5)}]]
+                            </p>
+                            <p>
+                                <strong>체크아웃</strong>
+                                [[${map.checkOut.substring(5,10)}]] [[${map.COday}]] [[${room.checkOutTime.substring(0,5)}]]
+                            </p>
+                        </div>
+                        <div class="total_price">
+                            <p>
+                                <strong>
+                                    <b>총 결제 금액</b>
+                                    (VAT포함)
+                                </strong>
+                                <span class="in_price">[[${#numbers.formatInteger(room.avg_price * map.days, 1, 'COMMA')}]]원</span>
+                            </p>
+                            <ul>
+                                <li>해당 객실가는 세금, 봉사료가 포함된 금액입니다</li>
+                                <li>
+                                    결제완료 후
+                                    <span>예약자 이름</span>
+                                    으로 바로<br/>
+                                    <span>체크인</span>
+                                    하시면 됩니다.
+                                </li>
+                            </ul>
+                        </div>
+                        <button type="button" class="btn_pay">결제하기</button>
+                    </div>
+                </div>
+            </main>
+            <!-- 쿠폰 팝업-->
+            <div id="popup_cp">
+                <div class="popup-Coupon">
+                    <header class="top-nav">
+                        <div class="wrap-title">
+                            쿠폰적용
+                        </div>
+                        <div class="wrap-icon">
+                            <img th:src="@{/images/product/close1.png}" alt="">
+                        </div>
+                    </header>
+                    <div id="contents-box">
+                        <div class="coupon-card">
+                            <div class="coupon-type">
+                                <span>일반쿠폰</span>
+                                <span class="count">[[${cps.size()}]]장</span>
+                            </div>
+                            <div class="coupon-list">
+                                <ul class="wrap-list">
+                                    <li class="coupon-el none">
+                                        <div class="radiobutton-wrap">
+                                            <div>버튼</div>
+                                        </div>
+                                        <div class="coupon-info-and-title">
+                                            <div class="coupon-info">
+                                                적용안함
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="coupon-el" th:each="cp : ${cps}"
+                                        th:if="${cp.cp_minimum <= room.avg_price * map.days}" th:id="${cp.cp_id}">
+                                        <div class="radiobutton-wrap">
+                                            <div>버튼</div>
+                                        </div>
+                                        <div class="coupon-info-and-title">
+                                            <span class="coupon-amount" th:if="${cp.cp_price > 0}"
+                                                  th:attr="data-price=${cp.cp_dis_price}" th:id="${cp.cp_id}">
+                                                [[${#numbers.formatInteger(cp.cp_price,1,'COMMA')}]]원
+                                            </span>
+                                            <span class="coupon-amount" th:if="${cp.cp_rate > 0}"
+                                                  th:attr="data-price=${cp.cp_dis_price}" th:id="${cp.cp_id}">
+                                                [[${cp.cp_rate}]]%
+                                            </span>
+                                            <div class="coupon-info">
+                                                <span>[[${cp.cp_subject}]]</span>
+                                                <span>[[${#numbers.formatInteger(cp.cp_minimum,1,'COMMA')}]]원 이상 사용가능</span>
+                                                <span th:if="${cp.cp_rate > 0}">
+                                                    최대 [[${#numbers.formatInteger((cp.cp_maximum * cp.cp_rate / 100), 1, 'COMMA')}]]원 까지 할인가능
+                                                </span>
+                                                <!--<span>선착순 마감전까지</span>-->
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="coupon-el deact" th:each="cp : ${cps}"
+                                        th:unless="${cp.cp_minimum <= room.avg_price * map.days}" th:id="${cp.cp_id}">
+                                        <div class="radiobutton-wrap">
+                                            <div>버튼</div>
+                                        </div>
+                                        <div class="coupon-info-and-title">
+                                            <span class="coupon-amount" th:if="${cp.cp_price > 0}">[[${#numbers.formatInteger(cp.cp_price,1,'COMMA')}]]원</span>
+                                            <span class="coupon-amount" th:if="${cp.cp_rate > 0}">[[${cp.cp_rate}]]%</span>
+                                            <div class="coupon-info">
+                                                <span>[[${cp.cp_subject}]]</span>
+                                                <span>[[${#numbers.formatInteger(cp.cp_minimum,1,'COMMA')}]]원 이상 사용가능</span>
+                                                <span th:if="${cp.cp_rate > 0}">
+                                                    최대 [[${#numbers.formatInteger(cp.cp_maximum,1,'COMMA')}]]원의 [[${cp.cp_rate}]]% 까지 할인가능
+                                                </span>
+                                                <!--<span>선착순 마감전까지</span>-->
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="coupon-list">
+                        <span class="empty-state" th:if="${cps.size() == 0}">
+                            사용 가능한 쿠폰이 없습니다.
+                        </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="wrap-btn">
+                        <button class="btn-coupon">0원 적용하기</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 약관 팝업 -->
+            <div class="popup_terms">
+                <div>
+                    <div class="fix_title">
+                        <button type="button" onclick="popdown_terms()">닫기</button>
+                    </div>
+                    <div class="iscroll_cp" style="touch-action: none;">
+                        <div class="content" style="transform: translate(0px, 0px) translateZ(0px);">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </th:block>
+        <th:block layout:fragment="script">
+            <script th:inline="javascript">
+                const userPoint = [[${user.point}]];
+                const price = [[${room.avg_price * map.days}]];
+                const bisinfo = [[${bv}]];
+                const acc_name = [[${room.acc_name}]]
+                const room_name = [[${room.room_name}]]
+                const user_email = [[${user.user_id}]];
+                const user_hp = [[${user.hp}]];
+                const code = [[${@environment.getProperty('import.code')}]];
+            </script>
+        </th:block>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/admin-layout}">
+<th:block layout:fragment="css-js">
+    <link rel="stylesheet" th:href="@{/css/admin/adminQna.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/adminCommon.css}">
+    <style>
+    </style>
+</th:block>
+<th:block layout:fragment="content">
+    <main>
+        <div class="main_inner">
+            <!-- 죄측 사이드바 -->
+            <th:block th:replace="~{fragments/_aside::adminFragment}"></th:block>
+            <!-- 우측 메인 컨테이너 -->
+            <section class="main_content">
+                <div class="main_cotent_inner">
+                    <div class="main_content_div">
+                        <div class="col_nav">
+                            <span>고객센터 ></span>
+                            <span>문의사항</span>
+                        </div>
+                        <div class="col2">
+                            <form action="#">
+                                <div class="board_list">
+                                    <ul>
+                                        <li>
+                                            <input type="checkbox" name="all">
+                                        </li>
+                                        <li>#</li>
+                                        <li>제목</li>
+                                        <li>작성자</li>
+                                        <li>작성일</li>
+                                        <li>상태</li>
+                                    </ul>
+                                    <ul class="show_list" th:if="${AdminQnaArticles.size() == 0}">
+                                        <li id="nonData" colspan="6">
+                                            등록된 문의글이 없습니다.
+                                        </li>
+                                    </ul>
+                                    <th:block th:each="qna,i:${AdminQnaArticles}">
+                                        <ul>
+                                            <li>
+                                                <input type="checkbox" name="cs_no" th:value="${qna.cs_no}">
+                                            </li>
+                                            <li>[[*{totalCnt-sc.offset} - ${i.index}]]</li>
+                                            <li class="title">
+                                                <a th:href="@{/admin/cs/qna/view (cs_no=${qna.cs_no}, page=${ph.sc.page})}">[[${qna.cs_title}]]</a>
+                                            </li>
+                                            <li>[[${qna.nick}]]</li>
+                                            <li>[[${qna.cs_rdate.substring(2, 10)}]]</li>
+                                            <li th:if="${qna.cs_reply == null}" class="re_off">검토중</li>
+                                            <li th:if="${qna.cs_reply != null}" class="re_complete">답변완료</li>
+                                        </ul>
+                                    </th:block>
+                                </div>
+                                <div class="pagination" th:object="${ph}" th:style="${#lists.size(AdminQnaArticles) == 0 ? 'visibility:hidden;':''}">
+
+                                    <th:block th:if="*{showPrev}">
+                                        <a th:href="@{/admin/cs/qna/list} + ${ph.sc.getQueryString(ph.beginPage-1)}" class="prev">< </a>
+                                    </th:block>
+
+                                    <th:block th:each="num:${#numbers.sequence(ph.beginPage, ph.endPage)}">
+                                        <a th:href="@{/admin/cs/qna/list} + ${ph.sc.getQueryString(num)}" th:class="${num == ph.sc.page ? 'num current':'num'}">
+                                            [[${num}]]
+                                        </a>
+                                    </th:block>
+
+                                    <th:block th:if="*{showNext}">
+                                        <a th:href="@{/admin/cs/qna/list} + ${ph.sc.getQueryString(ph.endPage+1)}" class="next"> ></a>
+                                    </th:block>
+
+                                </div>
+                                <div class="btnAdminProd4">
+                                    <a class="btnQnaDelete">
+                                        선택삭제
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="blank30"></div>
+                </div>
+            </section>
+        </div>
+    </main>
+    <th:block th:replace="~{fragments/_footer::footerFragment}"></th:block>
+</th:block>
+<th:block layout:fragment="script">
+    <script th:src="@{/js/cs/qnaListDelete.js}"></script>
+    <script>
+         $(function(){
+            var checkList = [];
+            // 전체선택 체크박스
+            $('input[name=all]').click(function(){
+                //리스트 초기화
+                checkList = [];
+
+                // 전체 선택 시 전부 체크
+                if($(this).prop('checked')){
+                    $('input[name=cs_no]').prop('checked', true);
+                }else{
+                    $('input[name=cs_no]').prop('checked', false);
+                }
+
+                // checkList에 담는 이유는 선택삭제시 필요
+                $('input[name=cs_no]:checked').each(function(){checkList.push($(this).val()); });
+
+                console.log("checklist : " + checkList);
+            });
+
+            // 개별 선택 체크박스 이벤트 처리
+            $('input[name=cs_no]').click(function(){
+                // 체크가 해제되면 전체 선택 체크박스 체크 해제
+                if(!$(this).prop('checked')){
+                    $('input[name=all]').prop('checked', false);
+                }
+                // 모든 체크박스가 체크되어 있으면 전체 선택 체크박스 체크
+                else if($('input[name=cs_no]:checked').length === $('input[name=cs_no]').length){
+                    $('input[name=all]').prop('checked', true);
+                }
+
+                // checkList에 담는 이유는 선택 삭제시 필요
+                checkList = [];
+                $('input[name=cs_no]:checked').each(function(){
+                    checkList.push($(this).val());
+                });
+
+                console.log("checklist : " + checkList);
+            });
+         });
+    </script>
+</th:block>
+</html>

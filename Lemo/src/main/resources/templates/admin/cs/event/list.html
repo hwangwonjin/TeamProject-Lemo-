@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/admin-layout}">
+<th:block layout:fragment="css-js">
+    <link rel="stylesheet" th:href="@{/css/admin/adminEvent.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/adminCommon.css}">
+    <style>
+    </style>
+</th:block>
+<th:block layout:fragment="content">
+            <main>
+                <div class="main_inner">
+                    <!-- 죄측 사이드바 -->
+                    <th:block th:replace="~{fragments/_aside::adminFragment}"></th:block>
+                    <!-- 우측 메인 컨테이너 -->
+                    <section class="main_content">
+                        <div class="main_cotent_inner">
+                            <div class="main_content_div">
+                                <div class="col_nav">
+                                    <span>고객센터 ></span>
+                                    <span>이벤트 목록</span>
+                                </div>
+                                <div class="col2">
+                                    <form action="#">
+                                        <div class="board_list">
+                                            <ul>
+                                                <li>#</li>
+                                                <li>제목</li>
+                                                <li>기간</li>
+                                                <li>메인베너</li>
+                                                <li>이벤트베너</li>
+                                            </ul>
+                                            <ul class="show_list" th:if="${adminEventArticles.size() == 0}">
+                                                <li id="nonData" colspan="6">
+                                                    등록된 이벤트가 없습니다.
+                                                </li>
+                                            </ul>
+                                            <th:block th:each="article,i:${adminEventArticles}">
+                                            <ul>
+                                                <li>[[*{totalCnt-sc.offset} - ${i.index}]]</li>
+                                                <li class="title">
+                                                    <a th:href="@{/admin/cs/event/view(cs_no=${article.cs_no}, page=${ph.sc.page})}" >[[${article.cs_title}]]</a>
+                                                </li>
+                                                <li>[[${article.cs_eventStart}]] ~ [[${article.cs_eventEnd}]]</li>
+                                                <li class="prodBtn" id="event_li">
+                                                    <div class="on-off-toggle">
+                                                        <input class="on-off-toggle__input" type="checkbox" id="bopis"/>
+                                                        <label for="bopis" class="on-off-toggle__slider" th:data-no="${article.cs_no}" th:classappend="${article.cs_eventMainBannerState == 1} ? 'on' : ''"></label>
+                                                    </div>
+                                                </li>
+                                                <li class="prodBtn" id="event_lii" th:classappend="${(T(java.time.LocalDate).parse(article.cs_eventEnd) lt T(java.time.LocalDate).now()) ? 'end' : ''}">
+                                                    <div class="on-off-bannerToggle">
+                                                        <input class="on-off-bannerToggle__input" type="checkbox" id="bannerBopis" th:disabled="${(T(java.time.LocalDate).parse(article.cs_eventEnd) lt T(java.time.LocalDate).now())}"/>
+                                                        <label for="bannerBopis" class="on-off-bannerToggle__slider" th:data-no="${article.cs_no}" th:classappend="${article.cs_eventBannerState == 1} ? 'on' : ''"></label>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                            </th:block>
+                                        </div>
+                                        <div class="pagination" th:object="${ph}" th:style="${#lists.size(adminEventArticles) == 0 ? 'visibility:hidden;':''}">
+
+                                            <th:block th:if="*{showPrev}">
+                                                <a th:href="@{/admin/cs/event/list} + ${ph.sc.getQueryString(ph.beginPage-1)}" class="prev">< </a>
+                                            </th:block>
+
+                                            <th:block th:each="num:${#numbers.sequence(ph.beginPage, ph.endPage)}">
+                                                <a th:href="@{/admin/cs/event/list} + ${ph.sc.getQueryString(num)}" th:class="${num == ph.sc.page ? 'num current':'num'}">
+                                                    [[${num}]]
+                                                </a>
+                                            </th:block>
+
+                                            <th:block th:if="*{showNext}">
+                                                <a th:href="@{/admin/cs/event/list} + ${ph.sc.getQueryString(ph.endPage+1)}" class="next"> ></a>
+                                            </th:block>
+
+                                        </div>
+                                        <div class="btnAdminProd">
+                                            <a th:href="@{/admin/cs/event/write}">
+                                                이벤트등록
+                                            </a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="blank30"></div>
+                        </div>
+                    </section>
+                </div>
+            </main>
+        <th:block th:replace="~{fragments/_footer::footerFragment}"></th:block>
+</th:block>
+<th:block layout:fragment="script">
+    <script>
+      $(document).ready(function(){
+
+            $('.btnAct').on('click', function(){
+
+                let status = $(this).hasClass('on');
+                if(!status){
+                    $(this).addClass('on');
+                    $('.btnDeAct').removeClass('on');
+                }
+            });
+
+            $('.btnDeAct').on('click', function(){
+
+                let status = $(this).hasClass('on');
+                if(!status){
+                    $(this).addClass('on');
+                    $('.btnAct').removeClass('on');
+                }
+            });
+
+
+
+            /** 메인베너 **/
+           $('.on-off-toggle__slider').click(function(){
+                if($(this).hasClass('on')){
+                    $(this).removeClass('on');
+                } else {
+                    $(this).addClass('on');
+                }
+
+                const isChecked = $(this).hasClass('on');
+                let cs_eventMainBannerState;
+                let cs_no = $(this).attr('data-no');
+
+                if(isChecked)
+                    cs_eventMainBannerState = 1;
+                else
+                    cs_eventMainBannerState = 0;
+
+                const jsonData = {
+                    "cs_eventMainBannerState":cs_eventMainBannerState,
+                    "cs_no":cs_no
+                }
+
+                ajaxAPI("admin/cs/event/mainBanner", jsonData, "post").then((response) => {
+                        let title;
+
+                        if(response.result > 0) {
+                            if(cs_eventMainBannerState == 1){
+                                title = "메인 베너가 활성화 되었습니다"
+                            }else{
+                                title = "메인베너가 비활성화 되었습니다"
+                            }
+                            Swal.fire({
+                                 title : title,
+                                 icon : 'success',
+                                 confirmButtonText : '확인'
+                             })
+                        }else {
+                            alert('error');
+                        }
+                    }).catch((errMsg) => {
+                        console.log(errorMsg);
+                    });
+           });
+
+            /** 이벤트 베너 **/
+            $('.on-off-bannerToggle__slider').click(function(){
+                if($(this).hasClass('on')){
+                    $(this).removeClass('on');
+                } else {
+                    $(this).addClass('on');
+                }
+
+                const isClicked = $(this).hasClass('on');
+                let cs_eventBannerState;
+                let cs_no = $(this).attr('data-no');
+
+                if(isClicked)
+                    cs_eventBannerState = 1;
+                else
+                    cs_eventBannerState = 0;
+
+                const jsonData = {
+                    "cs_eventBannerState":cs_eventBannerState,
+                    "cs_no":cs_no
+                }
+
+                ajaxAPI("admin/cs/event/banner", jsonData, "post").then((response) => {
+                        let title;
+
+                        if(response.result > 0) {
+                            if(cs_eventBannerState == 1){
+                                title = "이벤트베너가 활성화 되었습니다"
+                            }else{
+                                title = "이벤트베너가 비활성화 되었습니다"
+                            }
+                            Swal.fire({
+                                 title : title,
+                                 icon : 'success',
+                                 confirmButtonText : '확인'
+                             })
+                        }else {
+                            alert('error');
+                        }
+                    }).catch((errMsg) => {
+                        console.log(errorMsg);
+                    });
+             });
+        });
+    </script>
+</th:block>
+</html>

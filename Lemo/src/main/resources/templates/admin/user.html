@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/admin-layout}">
+<th:block layout:fragment="css-js">
+    <link rel="stylesheet" th:href="@{/css/admin/adminUser.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/adminCommon.css}">
+    <script th:src="@{/js/common/jquery.highlight-5.js}"></script>
+</th:block>
+<th:block layout:fragment="content">
+    <main>
+        <div class="main_inner">
+            <!-- 죄측 사이드바 -->
+            <th:block th:replace="~{fragments/_aside::adminFragment}"></th:block>
+            <!-- 우측 메인 컨테이너 -->
+            <section class="main_content">
+                <div class="main_cotent_inner">
+                    <div class="main_content_div">
+                        <div class="col_nav">
+                            <span>회원관리 ></span>
+                            <span>회원목록</span>
+                        </div>
+                        <div class="col2">
+                            <form th:action="@{/admin/user}">
+                                <!-- 선택 -->
+                                <div>
+                                <span class="search_user_tit">회원검색</span>
+                                <table class="search_user_table">
+                                    <tr>
+                                        <th>회원등급</th>
+                                        <td>
+                                            <input type="radio" name="searchLevel" value="1" id="rdGen"><label for="rdGen">일반</label>
+                                            <input type="radio" name="searchLevel" value="2" id="rdElite"><label for="rdElite">엘리트</label>
+                                        </td>
+                                        <th>회원구분</th>
+                                        <td>
+                                            <input type="radio" name="searchType" value="1" id="rdUser"><label for="rdUser">일반</label>
+                                            <input type="radio" name="searchType" value="2" id="rdBusiness"><label for="rdBusiness">판매자</label>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>알림동의여부</th>
+                                        <td>
+                                            <input type="radio" name="searchIsNoticeEnabled" value="1" id="rdPer"><label for="rdPer">수신허용</label>
+                                            <input type="radio" name="searchIsNoticeEnabled" value="0" id="rdDec"><label for="rdDec">수신거부</label>
+                                        </td>
+                                        <th>검색</th>
+                                        <td>
+                                            <select name="searchField" class="searchField">
+                                                <option value="userId" th:selected="${ph.sc.searchField == 'userId'}">아이디</option>
+                                                <option value="userNick" th:selected="${ph.sc.searchField == 'userNick'}">닉네임</option>
+                                                <input type="hidden" class="search_box" name="searchWord" placeholder="검색어를 입력하세요"/>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </table>
+                                </div>
+                                <button type="button" class="resetOption" onclick="location.href = window.location.origin + window.location.pathname;">초기화</button>
+                                <button type="submit" class="btnSearch">검색</button>
+                                <!-- 목록 -->
+                                <div class="board_list" id="userList">
+                                    <ul class="column">
+                                        <li>번호</li>
+                                        <li>회원 아이디</li>
+                                        <li class="nick" >닉네임</li>
+                                        <li class="sortIsEnabled" name="sort" value="1">활성화
+                                            <img id="sortIsEnabled_img" th:src="@{/images/admin/sort.png}">
+                                        </li>
+                                        <li class="sortLevel" name="sortLevel" value="4">등급
+                                            <img id="sortLevel_img" th:src="@{/images/admin/sort.png}">
+                                        </li>
+                                        <li class="sortType" value="7">구분
+                                            <img id="sortType_img" th:src="@{/images/admin/sort.png}">
+                                        </li>
+                                        <li class="sortRdate" value="10">가입일
+                                            <img id="sortRdate_img" th:src="@{/images/admin/sort.png}">
+                                        </li>
+                                        <li>관리</li>
+                                    </ul>
+                                    <th:block th:if="${#lists.size(users) !=0}">
+                                        <ul th:each="user,i:${users}" id="userTable">
+                                            <li class="list_number">[[${ph.totalCnt - ph.sc.offset - i.index}]]</li>
+                                            <li class="user_id" th:text="${user.user_id}">mango@gmail.com</li>
+                                            <li class="user_nick" th:text="${user.nick}">고민중인흰둥이</li>
+                                            <li th:text="${user.isEnabled == 0 ? '탈퇴' : (user.isLocked == 0 ? '차단' : '정상')}" th:class="${user.isEnabled == 0 ? 'drop' : (user.isLocked == 0 ? 'block' : 'normal')}"></li>
+                                            <li th:text="${user.level == 1}? '일반':'엘리트'" th:class="${user.level == 1? 'genUser' : 'eliteUSer'}">등급</li>
+                                            <li th:text="${user.type == 1}? '홈회원':'SNS회원'" th:class="${user.type == 1 ? 'homeUser' : 'snsUser'}">회원 구분</li>
+                                            <li class="user_date" th:text="${user.rdate}">가입일</li>
+                                            <li class="user_memo">
+                                                <button class="btnNote" th:value="${user.user_id}">메모</button>
+                                                <!-- 메모 팝업 -->
+                                                <dialog id="d_Memo">
+                                                    <form method="dialog">
+                                                        <section>
+                                                            <nav class="d_tit">
+                                                                <h1 class="d_tit2">메모</h1>
+                                                                <input type="hidden" class="d_id">
+                                                            </nav>
+                                                            <div class="d_box">
+                                                                <textarea class="d_content" placeholder="메모 내용을 작성하세요" th:text="${user.memo}"></textarea>
+                                                            </div>
+                                                            <div class="rr_btn">
+                                                                <button class="btnRclose" id="btnCloseModal2" value="close" type="reset">닫기</button>
+                                                                <button type="button" class="btnRsubmit" id="btnCloseModal3" >작성</button>
+                                                            </div>
+                                                        </section>
+                                                    </form>
+                                                </dialog>
+                                                <button th:if="${user.isLocked == 1}" class="btnBlockUser" type="button" id="btnBlockUser" th:value="${user.user_id}">차단</button>
+                                                <button th:if="${user.isLocked == 0}" class="btnClearUser" type="button" id="btnClearUser" th:value="${user.user_id}">해제</button>
+                                            </li>
+
+                                        </ul>
+                                    </th:block>
+                                    <th:block th:if="${#lists.size(users) ==0}">
+                                        <span class="noResult">해당 회원이 없습니다.</span>
+                                    </th:block>
+
+                                </div>
+                                <div class="pagination" th:object="${ph}" th:style="${#lists.size(users) == 0 ? 'visibility:hidden;':''}">
+
+                                    <th:block th:if="*{showPrev}">
+                                        <a th:href="@{/admin/user} + ${ph.sc.getQueryString(ph.beginPage-1)}" class="prev">< </a>
+                                    </th:block>
+
+                                    <th:block th:each="num:${#numbers.sequence(ph.beginPage, ph.endPage)}">
+                                        <a th:href="@{/admin/user} + ${ph.sc.getQueryString(num)}" th:class="${num == ph.sc.page ? 'num current':'num'}">
+                                            [[${num}]]
+                                        </a>
+                                    </th:block>
+
+                                    <th:block th:if="*{showNext}">
+                                        <a th:href="@{/admin/user} + ${ph.sc.getQueryString(ph.endPage+1)}" class="next"> ></a>
+                                    </th:block>
+
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="blank30"></div>
+                </div>
+            </section>
+        </div>
+    </main>
+    <th:block th:replace="~{fragments/_footer::footerFragment}"></th:block>
+</th:block>
+<th:block layout:fragment="script">
+<script>
+    $(document).ready(function(){
+        // 메모 팝업
+        $(document).on('click', '.btnNote', function(e){
+            e.preventDefault();
+            $(this).next().show();
+
+            //let d_id = $(this).parent().closest('ul').find('.user_id').text();
+            let d_id = $(this).val();
+            //console.log('d_id: '+ d_id );
+            $(this).next().find('.d_id').attr('value', d_id);
+
+        });
+
+        // 메모 팝업 닫기
+        $(document).on('click', '.btnRclose', function(e) {
+            e.preventDefault();
+            //console.log("click the close button");
+            $(this).closest('li').find('#d_Memo').hide();
+        });
+
+
+        // 메모 팝업 - input 엔터키 submit 막기 btnCloseModal3
+        $('.btnRsubmit').keydown(function() {
+            if (event.keyCode === 13) {
+                event.preventDefault();
+            };
+        });
+
+        // 검색 키워드 하이라이트
+        const searchField = document.querySelector('select[name=searchField]');
+
+        function highlightSearchKeyword() {
+          const searchWord = document.querySelector('input[name=searchWord]');
+
+          if (searchField.options[searchField.selectedIndex].value === "userId") {
+            $('.user_id').highlight(searchWord.value);
+          } else if (searchField.options[searchField.selectedIndex].value === "userNick") {
+            $('.user_nick').highlight(searchWord.value);
+          }
+        }
+
+
+        // 검색 후 함수 호출
+        $('form[name=userSearchForm]').submit(function(event) {
+          highlightSearchKeyword();
+        });
+
+
+        // URL로부터 parameter 가져오기
+        const urlParams = new URLSearchParams(window.location.search);
+        const searchTerm = urlParams.get('searchWord');
+
+        // 하이라이트
+        if(searchTerm) {
+          if (searchField.options[searchField.selectedIndex].value === "userId") {
+            $('.user_id').highlight(searchTerm);
+          } else if (searchField.options[searchField.selectedIndex].value === "userNick") {
+            $('.user_nick').highlight(searchTerm);
+          }
+        }
+
+        // 제출버튼
+        $('form').on('submit', function() {
+          // URL에 검색 쿼리 매개 변수 추가
+          const url = $(this).attr('action') + '?' + $(this).serialize();
+
+          // 검색 후 url로부터 parameter 가져오기
+          window.location.href = url;
+          return false;
+        });
+
+
+
+
+
+        // 메모 작성
+        $(document).on('click', '.btnRsubmit', function(e) {
+            e.preventDefault();
+
+            let user_id = $(this).parent().prev().prev().find('.d_id').val();
+            let memo = $(this).parent().prev().children().val();
+            //console.log('user_id: ' + user_id);
+            //console.log('memo: ' + memo);
+
+            const jsonData = {
+                "user_id": user_id,
+                "memo": memo
+            };
+
+            ajaxAPI("admin/user/memo", jsonData, "POST").then((response) => {
+                if (response.result > 0) {
+                  sweetalert("메모 작성이 완료되었습니다.", "success");
+                  $(this).closest('li').find('#d_Memo').hide();
+                } else {
+                  alert('error');
+                }
+            }).catch((errorMsg) => {
+                console.log(errorMsg);
+            });
+        });
+
+
+        // 회원 차단
+        $('#userList').on('click', '.btnBlockUser', function(e) {
+            e.preventDefault();
+            //console.log("click");
+
+            let user_id = $(this).val();
+            let normal = $(this).parent().closest('ul').find('.normal');
+            //console.log('user_id:' + user_id);
+
+            const jsonData = {"user_id": user_id};
+
+            ajaxAPI("admin/user/block", jsonData, "POST").then((response) => {
+                    if(response.result > 0) {
+                        sweetalert("해당 회원이 차단되었습니다.", "success");
+                        //$('#userList').load(location.href+' #userList');
+                        //location.reload();
+                        normal.attr('class', 'block');
+                        normal.text("차단");
+                        $(this).attr('class', 'btnClearUser');
+                        $(this).text("해제");
+                    } else {
+                        alert('error');
+                    }
+            }).catch((errorMsg) => {
+                console.log(errorMsg);
+            });
+        });
+
+        // 회원 차단 해제
+        $('#userList').on('click', '.btnClearUser', function(e) {
+            e.preventDefault();
+
+            let user_id = $(this).val();
+            let block = $(this).parent().closest('ul').find('.block');
+            //console.log('user_id:' + user_id);
+
+            const jsonData = {"user_id": user_id};
+
+
+            ajaxAPI("admin/user/unblock", jsonData, "POST").then((response) => {
+                    if(response.result > 0) {
+                        sweetalert("해당 회원의 차단이 해제되었습니다.", "success");
+                        //location.reload();
+                        block.attr('class', 'normal');
+                        block.text("정상");
+                        $(this).attr('class', 'btnBlockUser');
+                        $(this).text("차단");
+                    } else {
+                        alert('error');
+                    }
+            }).catch((errorMsg) => {
+                console.log(errorMsg);
+            });
+        });
+    });
+
+    // 활성화 정렬 (정상/차단)
+    $('.sortIsEnabled').click(function() {
+
+        const value = $(this).val();
+        //console.log('value : ' + value);
+
+        // 1(asc) -> 2(desc) -> 3( )
+        if(value == 1){
+            $(this).val(2);
+            $('#sortIsEnabled_img').attr("src", "/Lemo/images/admin/arrow-up.png");
+            $('#sortLevel_img').attr("src", "/Lemo/images/admin/sort.png");
+            $('#sortType_img').attr("src", "/Lemo/images/admin/sort.png");
+            $('#sortRdate_img').attr("src", "/Lemo/images/admin/sort.png");
+        }else if(value == 2){
+            $(this).val(3);
+            $('#sortIsEnabled_img').attr("src", "/Lemo/images/admin/arrow-down.png");
+            $('#sortLevel_img').attr("src", "/Lemo/images/admin/sort.png");
+            $('#sortType_img').attr("src", "/Lemo/images/admin/sort.png");
+            $('#sortRdate_img').attr("src", "/Lemo/images/admin/sort.png");
+        }else if(value == 3) {
+            $(this).val(1);
+            $('#sortIsEnabled_img').attr("src", "/Lemo/images/admin/sort.png");
+        }
+
+        const jsonData = {"sorted": value};
+         //console.log(jsonData);
+
+         const url = `admin/users?sorted=${value}`;
+
+        ajaxAPI(url, null, "GET").then((response) => {
+            //console.log(response);
+
+            // 동적 태그 생성
+            let tags = $("#userList > ul");
+            appendTags(tags, response);
+
+            // 페이지번호 생성
+            $('.pagination').empty();
+
+            let totalCnt = response.totalCnt;                   // 게시글 총 개수
+            let beginPage = response.beginPage;
+            let endPage = response.endPage;
+            let showNext = response.showNext;
+            let showPrev = response.showPrev;
+            let page = response.page;
+
+
+            // 이전 페이지
+            if(showPrev == true){
+                $('<a href="javascript:void(0)" onclick="pagingTags('+value+', '+ (beginPage - 10) +')"></a>').html("<").addClass("prev").appendTo('.pagination');
+
+            }
+
+            // 현재 페이지
+            for(i=beginPage; i<=endPage; i++){
+                $('<a href="javascript:void(0)" onclick="pagingTags('+value+', '+ i +')" class="' + (i == page ? 'current' : '') + '"></a>').attr('rel', i).html(i).appendTo('.pagination');
+            }
+
+            // 다음 페이지
+            if(showNext == true){
+                $('<a href="javascript:void(0)" onclick="pagingTags('+value+', '+ (endPage + 1) +')"></a>').html(">").addClass("next").appendTo('.pagination');
+            }
+
+
+        }).catch((errorMsg) => {
+        console.log(errorMsg);
+        });
+
+    });
+
+    // 등급 정렬 (일반/엘리트)
+    $('.sortLevel').click(function(){
+
+         const value = $(this).val();
+         //console.log('value : ' + value);
+
+        // 4(desc) -> 5(asc) -> 6( )
+         if(value == 4){
+             $(this).val(5);
+             $('#sortLevel_img').attr("src", "/Lemo/images/admin/arrow-up.png");
+             $('#sortIsEnabled_img').attr("src", "/Lemo/images/admin/sort.png");
+             $('#sortType_img').attr("src", "/Lemo/images/admin/sort.png");
+             $('#sortRdate_img').attr("src", "/Lemo/images/admin/sort.png");
+         }else if(value == 5){
+             $(this).val(6);
+             $('#sortLevel_img').attr("src", "/Lemo/images/admin/arrow-down.png");
+             $('#sortIsEnabled_img').attr("src", "/Lemo/images/admin/sort.png");
+             $('#sortType_img').attr("src", "/Lemo/images/admin/sort.png");
+             $('#sortRdate_img').attr("src", "/Lemo/images/admin/sort.png");
+         }else if(value == 6) {
+             $(this).val(4);
+             $('#sortLevel_img').attr("src", "/Lemo/images/admin/sort.png");
+         }
+
+         const jsonData = {"sorted": value};
+         //console.log(jsonData);
+
+         const url = `admin/users?sorted=${value}`;
+
+        ajaxAPI(url, null, "GET").then((response) => {
+            //console.log(response);
+
+            // 동적 태그 생성
+            let tags = $("#userList > ul");
+            appendTags(tags, response);
+
+            // 페이지번호 생성
+            $('.pagination').empty();
+
+            let totalCnt = response.totalCnt;                   // 게시글 총 개수
+            let beginPage = response.beginPage;
+            let endPage = response.endPage;
+            let showNext = response.showNext;
+            let showPrev = response.showPrev;
+            let page = response.page;
+
+            // 이전 페이지
+            if(showPrev == true){
+                $('<a href="javascript:void(0)" onclick="pagingTags('+value+', '+ (beginPage - 1) +')"></a>').html("<").addClass("prev").appendTo('.pagination');
+            }
+
+            // 현재 페이지
+            for(i=beginPage; i<endPage; i++){
+                $('<a href="javascript:void(0)" onclick="pagingTags('+value+', '+ i +')" class="' + (i == page ? 'current' : '') + '"></a>').attr('rel', i).html(i).appendTo('.pagination');
+            }
+
+            // 다음 페이지
+            if(showNext == true){
+                $('<a href="javascript:void(0)" onclick="pagingTags('+value+', '+ (endPage + 1) +')"></a>').html(">").addClass("next").appendTo('.pagination');
+            }
+
+
+        }).catch((errorMsg) => {
+            console.log(errorMsg);
+        });
+    });
+
+    // 구분 정렬 (홈회원/SNS회원)
+    $('.sortType').click(function(){
+        const value = $(this).val();
+        //console.log('value : ' + value);
+
+        // 7(desc) -> 8(asc) -> 9( )
+        if(value == 7){
+            $(this).val(8);
+            $('#sortType_img').attr("src", "/Lemo/images/admin/arrow-up.png");
+            $('#sortIsEnabled_img').attr("src", "/Lemo/images/admin/sort.png");
+            $('#sortLevel_img').attr("src", "/Lemo/images/admin/sort.png");
+            $('#sortRdate_img').attr("src", "/Lemo/images/admin/sort.png");
+        }else if(value == 8){
+            $(this).val(9);
+            $('#sortType_img').attr("src", "/Lemo/images/admin/arrow-down.png");
+            $('#sortIsEnabled_img').attr("src", "/Lemo/images/admin/sort.png");
+            $('#sortLevel_img').attr("src", "/Lemo/images/admin/sort.png");
+            $('#sortRdate_img').attr("src", "/Lemo/images/admin/sort.png");
+        }else if(value == 9) {
+            $(this).val(7);
+            $('#sortType_img').attr("src", "/Lemo/images/admin/sort.png");
+        }
+
+        const jsonData = {"sorted": value};
+        //console.log(jsonData);
+
+        const url = `admin/users?sorted=${value}`;
+
+        ajaxAPI(url, null, "GET").then((response) => {
+            //console.log(response);
+
+            // 동적 태그 생성
+            let tags = $("#userList > ul");
+            appendTags(tags, response);
+
+            // 페이지번호 생성
+            $('.pagination').empty();
+
+            let totalCnt = response.totalCnt;                   // 게시글 총 개수
+            let beginPage = response.beginPage;
+            let endPage = response.endPage;
+            let showNext = response.showNext;
+            let showPrev = response.showPrev;
+            let page = response.page;
+
+            // 이전 페이지
+            if(showPrev == true){
+                $('<a href="javascript:void(0)" onclick="pagingTags('+value+', '+ (beginPage - 1) +')"></a>').html("<").addClass("prev").appendTo('.pagination');
+            }
+
+            // 현재 페이지
+            for(i=beginPage; i<endPage; i++){
+                $('<a href="javascript:void(0)" onclick="pagingTags('+value+', '+ i +')" class="' + (i == page ? 'current' : '') + '"></a>').attr('rel', i).html(i).appendTo('.pagination');
+            }
+
+            // 다음 페이지
+            if(showNext == true){
+                $('<a href="javascript:void(0)" onclick="pagingTags('+value+', '+ (endPage + 1) +')"></a>').html(">").addClass("next").appendTo('.pagination');
+            }
+
+
+        }).catch((errorMsg) => {
+            console.log(errorMsg);
+        });
+    });
+
+    // 가입일 정렬
+    $('.sortRdate').click(function(){
+        const value = $(this).val();
+        //console.log('value : ' + value);
+
+        // 10(asc) -> 11(desc) -> 12( )
+        if(value == 10){
+            $(this).val(11);
+            $('#sortRdate_img').attr("src", "/Lemo/images/admin/arrow-up.png");
+            $('#sortIsEnabled_img').attr("src", "/Lemo/images/admin/sort.png");
+            $('#sortLevel_img').attr("src", "/Lemo/images/admin/sort.png");
+            $('#sortType_img').attr("src", "/Lemo/images/admin/sort.png");
+        }else if(value == 11){
+            $(this).val(12);
+            $('#sortRdate_img').attr("src", "/Lemo/images/admin/arrow-down.png");
+            $('#sortIsEnabled_img').attr("src", "/Lemo/images/admin/sort.png");
+            $('#sortLevel_img').attr("src", "/Lemo/images/admin/sort.png");
+            $('#sortType_img').attr("src", "/Lemo/images/admin/sort.png");
+        }else if(value == 12) {
+            $(this).val(10);
+            $('#sortRdate_img').attr("src", "/Lemo/images/admin/sort.png");
+        }
+
+        const jsonData = {"sorted": value};
+        //console.log(jsonData);
+
+        const url = `admin/users?sorted=${value}`;
+
+        ajaxAPI(url, null, "GET").then((response) => {
+            //console.log(response);
+
+            // 동적 태그 생성
+            let tags = $("#userList > ul");
+            appendTags(tags, response);
+
+            // 페이지번호 생성
+            $('.pagination').empty();
+
+            let totalCnt = response.totalCnt;                   // 게시글 총 개수
+            let beginPage = response.beginPage;
+            let endPage = response.endPage;
+            let showNext = response.showNext;
+            let showPrev = response.showPrev;
+            let page = response.page;
+
+
+            // 이전 페이지
+            if(showPrev == true){
+                $('<a href="javascript:void(0)" onclick="pagingTags('+value+', '+ (beginPage - 1) +')"></a>').html("<").addClass("prev").appendTo('.pagination');
+            }
+
+            // 현재 페이지
+            for(i=beginPage; i<endPage; i++){
+                $('<a href="javascript:void(0)" onclick="pagingTags('+value+', '+ i +')" class="' + (i == page ? 'current' : '') + '"></a>').attr('rel', i).html(i).appendTo('.pagination');
+            }
+
+            // 다음 페이지
+            if(showNext == true){
+                $('<a href="javascript:void(0)" onclick="pagingTags('+value+', '+ (endPage + 1) +')"></a>').html(">").addClass("next").appendTo('.pagination');
+            }
+
+
+        }).catch((errorMsg) => {
+            console.log(errorMsg);
+        });
+    });
+
+
+    function pagingTags(value, page) {
+
+        const jsonData = { "sorted": value, "page" : page };
+        //console.log(jsonData);
+
+        const url = `admin/users?sorted=${value}&page=${page}`;
+
+
+
+        ajaxAPI(url, null, "GET").then((response) => {
+            //console.log(response);
+
+            // 동적 태그 생성
+            let tags = $("#userList > ul");
+            appendTags(tags, response);
+
+            // 페이지번호 생성
+            $('.pagination').empty();
+
+            let totalCnt = response.totalCnt;                   // 게시글 총 개수
+            let beginPage = response.beginPage;
+            let endPage = response.endPage;
+            let showNext = response.showNext;
+            let showPrev = response.showPrev;
+            let page = response.page;
+
+
+            // 이전 페이지
+            if(showPrev == true){
+                $('<a href="javascript:void(0)" onclick="pagingTags('+value+', '+ (beginPage - 10) +')"></a>').html("<").addClass("prev").appendTo('.pagination');
+            }
+
+            // 현재 페이지
+            for(i=beginPage; i<=endPage; i++){
+                $('<a href="javascript:void(0)" onclick="pagingTags('+value+', '+ i +')" class="' + (i == page ? 'current' : '') + '"></a>').attr('rel', i).html(i).appendTo('.pagination');
+            }
+
+            // 다음 페이지
+            if(showNext == true){
+                $('<a href="javascript:void(0)" onclick="pagingTags('+value+', '+ (endPage + 1) +')"></a>').html(">").addClass("next").appendTo('.pagination');
+            }
+
+        }).catch((errorMsg) => {
+            console.log(errorMsg);
+        });
+    }
+
+    function appendTags(tags, response){
+
+        tags.slice(1).remove();
+
+        for(const [i, user] of response.users.entries()){
+            let  = user.isEnabled;
+            let tags = `<ul>
+                            <li>${response.totalCnt - response.offset - i}</li>
+                            <li class="user_id">${user.user_id}</li>
+                            <li class="user_nick">${user.nick}</li>
+                            <li class="${user.isEnabled == 0 ? 'drop' : (user.isLocked == 0 ? 'block' : 'normal')}">${user.isEnabled == 0 ? '탈퇴' :  (user.isLocked == 0 ? '차단' : '정상')}</li>
+                            <li class="${user.level == 1? 'genUser' : 'eliteUser'}">${user.level == 1? '일반': '엘리트'}</li>
+                            <li class="${user.type == 1 ? 'homeUser' : 'snsUser'}">${user.type == 1? '홈회원':'SNS회원'}</li>
+                            <li>${user.rdate}</li>
+                            <li>
+                                <button class="btnNote" value="${user.user_id}">메모</button>
+                                <dialog id="d_Memo">
+                                    <form method="dialog">
+                                        <section>
+                                            <nav class="d_tit">
+                                                <h1 class="d_tit2">메모</h1>
+                                                <input type="hidden" class="d_id">
+                                            </nav>
+                                            <div class="d_box">
+                                                <textarea class="d_content" placeholder="메모 내용을 작성하세요">${user.memo}</textarea>
+                                            </div>
+                                            <div class="rr_btn">
+                                                <button class="btnRclose" id="btnCloseModal2">닫기</button>
+                                                <button type="button" class="btnRsubmit" id="btnCloseModal3" >작성</button>
+                                            </div>
+                                        </section>
+                                    </form>
+                                </dialog>
+                                <button data-action="${user.isLocked == 1? 'block':'clear'}" class="btnBlockUser" type="button" id="btnBlockUser" value="${user.user_id}">차단</button>
+                                <button data-action="${user.isLocked == 0? 'block':'clear'}" class="btnClearUser" type="button" id="btnClearUser" value="${user.user_id}">해제</button>
+                            </li>
+                       </ul>`;
+            $('#userList').append(tags);
+        }
+
+    }
+
+
+    // 체크박스 유지
+    $(document).ready(function() {
+       var searchLevel = getUrlParameter('searchLevel');
+       var searchType = getUrlParameter('searchType');
+       var searchIsNoticeEnabled = getUrlParameter('searchIsNoticeEnabled');
+       var searchField = getUrlParameter('searchField');
+       var searchWord = getUrlParameter('searchWord');
+
+        if (searchLevel == '1') {
+            $('#rdGen').prop('checked', true);
+        } else if (searchLevel == '2') {
+            $('#rdElite').prop('checked', true);
+        }
+
+        if (searchType == '1') {
+            $('#rdUser').prop('checked', true);
+        } else if (searchType == '2') {
+            $('#rdBusiness').prop('checked', true);
+        }
+
+        if (searchIsNoticeEnabled == '1') {
+            $('#rdPer').prop('checked', true);
+        } else if (searchIsNoticeEnabled == '0') {
+            $('#rdDec').prop('checked', true);
+        }
+
+        $('.search_box').val(searchWord);
+
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
+    });
+
+</script>
+</th:block>
+</html>
