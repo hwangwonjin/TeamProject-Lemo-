@@ -3,6 +3,7 @@
 
 블로그형 숙박 예약 웹사이트<br/>
 Blog type Hotel Booking Site<br/>
+사이트 주소 : http://wonjin.site/Lemo
 <br/>
 
 ## 프로젝트 산출물
